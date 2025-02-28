@@ -48,22 +48,37 @@ class SentimentAnalyzer:
             Dictionary containing sentiment label and score
         """
         try:
+            if not text.strip():
+                return {
+                    'sentiment': 'NEUTRAL',
+                    'sentiment_score': 0.0,
+                    'timestamp': datetime.now(),
+                    'text': text,
+                    'source': 'direct_input',
+                    'error': 'Empty text input'
+                }
+
             # Get sentiment prediction
             result = self.sentiment_pipeline(text)[0]
             
+            # Convert sentiment to uppercase
+            sentiment = result['label'].upper()
+            
             return {
-                'sentiment': result['label'],
-                'score': result['score'],
+                'sentiment': sentiment,
+                'sentiment_score': float(result['score']),
                 'timestamp': datetime.now(),
-                'text': text
+                'text': text,
+                'source': 'direct_input'
             }
         except Exception as e:
             logger.error(f"Error analyzing text: {str(e)}")
             return {
                 'sentiment': 'NEUTRAL',
-                'score': 0.0,
+                'sentiment_score': 0.0,
                 'timestamp': datetime.now(),
                 'text': text,
+                'source': 'direct_input',
                 'error': str(e)
             }
 
@@ -129,7 +144,7 @@ class SentimentAnalyzer:
             
             # Calculate aggregate metrics
             sentiments = [data['sentiment'] for data in sentiment_data]
-            scores = [data['score'] for data in sentiment_data]
+            scores = [data['sentiment_score'] for data in sentiment_data]
             
             # Get dominant sentiment
             sentiment_counts = {
