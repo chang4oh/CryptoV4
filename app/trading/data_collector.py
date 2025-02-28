@@ -1,121 +1,140 @@
 from datetime import datetime, timedelta
+from typing import List, Optional
 import logging
-from typing import List
+from pymongo import MongoClient
+from pymongo.errors import BulkWriteError
+import os
+from dotenv import load_dotenv
 
-from app.trading.binance_client import BinanceDataCollector
-from app.models.database import MongoDBClient
+from .binance_client import BinanceClient
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Load environment variables
+load_dotenv()
 
 class DataCollector:
     def __init__(self):
-        """Initialize data collector with Binance and MongoDB clients."""
-        self.binance_client = BinanceDataCollector()
-        self.db_client = MongoDBClient()
+        """Initialize DataCollector with Binance client and MongoDB connection."""
+        self.binance_client = BinanceClient()
         
-    def collect_historical_data(
-        self,
-        symbols: List[str],
-        interval: str,
-        days_back: int = 30
-    ) -> None:
+        # Connect to MongoDB
+        mongo_uri = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
+        self.mongo_client = MongoClient(mongo_uri)
+        self.db = self.mongo_client['CryptoV4']
+        logger.info("DataCollector initialized successfully")
+
+    def collect_historical_data(self, symbol: str, interval: str,
+                              start_time: Optional[datetime] = None,
+                              limit: int = 500) -> bool:
         """
-        Collect historical data for multiple symbols and store in MongoDB.
+        Collect historical market data and store in MongoDB.
+        
+        Args:
+            symbol: Trading pair symbol (e.g., 'BTCUSDT')
+            interval: Kline interval (e.g., '1h', '4h', '1d')
+            start_time: Start time for historical data
+            limit: Number of records to fetch
+        """
+        try:
+            # Fetch historical data from Binance
+            klines = self.binance_client.get_historical_klines(
+                symbol=symbol,
+                interval=interval,
+                start_time=start_time,
+                limit=limit
+            )
+            
+            # Prepare documents for MongoDB
+            documents = []
+            for kline in klines:
+                doc = {
+                    'symbol': symbol,
+                    'interval': interval,
+                    **kline  # Include all kline data
+                }
+                documents.append(doc)
+            
+            # Store in MongoDB with ordered=False for better performance
+            if documents:
+                try:
+                    self.db.market_data.insert_many(documents, ordered=False)
+                    logger.info(f"Stored {len(documents)} records for {symbol}")
+                except BulkWriteError as e:
+                    # Log duplicate key errors but continue
+                    logger.warning(f"Some records were duplicates: {str(e)}")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error collecting historical data: {str(e)}")
+            return False
+
+    def collect_current_prices(self, symbols: List[str]) -> bool:
+        """
+        Collect current price data for multiple symbols.
         
         Args:
             symbols: List of trading pair symbols
-            interval: Kline interval
-            days_back: Number of days of historical data to collect
         """
-        start_date = (datetime.now() - timedelta(days=days_back)).strftime('%Y-%m-%d')
-        
-        for symbol in symbols:
-            try:
-                logger.info(f"Collecting historical data for {symbol}")
-                
-                # Get historical data from Binance
-                df = self.binance_client.get_historical_klines(
-                    symbol=symbol,
-                    interval=interval,
-                    start_date=start_date
-                )
-                
-                # Calculate technical indicators
-                df = self.binance_client.calculate_technical_indicators(df)
-                
-                # Store in MongoDB
-                self.db_client.store_market_data(symbol, df)
-                
-                logger.info(f"Successfully stored historical data for {symbol}")
-                
-            except Exception as e:
-                logger.error(f"Error collecting data for {symbol}: {str(e)}")
-    
-    def update_market_data(self, symbols: List[str], interval: str) -> None:
+        try:
+            timestamp = datetime.now()
+            documents = []
+            
+            for symbol in symbols:
+                try:
+                    price_data = self.binance_client.get_symbol_price(symbol)
+                    doc = {
+                        'symbol': symbol,
+                        'timestamp': timestamp,
+                        'price': float(price_data['price']),
+                        'data_type': 'current_price'
+                    }
+                    documents.append(doc)
+                except Exception as e:
+                    logger.error(f"Error getting price for {symbol}: {str(e)}")
+                    continue
+            
+            if documents:
+                self.db.market_data.insert_many(documents)
+                logger.info(f"Stored current prices for {len(documents)} symbols")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error collecting current prices: {str(e)}")
+            return False
+
+    def start_data_collection(self, symbols: List[str], interval: str = '1h'):
         """
-        Update market data for multiple symbols with latest data.
+        Start continuous data collection for specified symbols.
         
         Args:
             symbols: List of trading pair symbols
-            interval: Kline interval
+            interval: Data collection interval
         """
-        for symbol in symbols:
-            try:
-                logger.info(f"Updating market data for {symbol}")
-                
-                # Get latest stored timestamp
-                latest_data = self.db_client.get_market_data(
-                    symbol=symbol,
-                    start_date=datetime.now() - timedelta(days=1)
-                )
-                
-                if not latest_data.empty:
-                    start_date = latest_data['timestamp'].max().strftime('%Y-%m-%d')
-                else:
-                    start_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
-                
-                # Get new data from Binance
-                df = self.binance_client.get_historical_klines(
+        try:
+            # First, collect some historical data
+            start_time = datetime.now() - timedelta(days=7)  # Last 7 days
+            for symbol in symbols:
+                self.collect_historical_data(
                     symbol=symbol,
                     interval=interval,
-                    start_date=start_date
+                    start_time=start_time
                 )
-                
-                if not df.empty:
-                    # Calculate technical indicators
-                    df = self.binance_client.calculate_technical_indicators(df)
-                    
-                    # Store in MongoDB
-                    self.db_client.store_market_data(symbol, df)
-                    
-                    logger.info(f"Successfully updated market data for {symbol}")
-                else:
-                    logger.info(f"No new data available for {symbol}")
-                
-            except Exception as e:
-                logger.error(f"Error updating data for {symbol}: {str(e)}")
+            
+            # Then collect current prices
+            self.collect_current_prices(symbols)
+            
+            logger.info("Initial data collection completed")
+            
+        except Exception as e:
+            logger.error(f"Error in data collection: {str(e)}")
 
 if __name__ == "__main__":
     # Example usage
     collector = DataCollector()
-    
-    # List of symbols to collect data for
     symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT']
-    
-    # Collect historical data
-    collector.collect_historical_data(
-        symbols=symbols,
-        interval='1h',
-        days_back=30
-    )
-    
-    # Update with latest data
-    collector.update_market_data(
-        symbols=symbols,
-        interval='1h'
-    ) 
+    collector.start_data_collection(symbols) 

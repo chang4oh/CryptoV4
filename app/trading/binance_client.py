@@ -1,9 +1,15 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import pandas as pd
 from binance.client import Client
+from binance.exceptions import BinanceAPIException
 from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -179,6 +185,117 @@ class BinanceDataCollector:
         except Exception as e:
             print(f"Error placing order: {str(e)}")
             return {}
+
+class BinanceClient:
+    def __init__(self):
+        """Initialize Binance API client with testnet credentials."""
+        self.api_key = os.getenv('BINANCE_API_KEY')
+        self.api_secret = os.getenv('BINANCE_SECRET_KEY')
+        
+        if not self.api_key or not self.api_secret:
+            raise ValueError("Binance API credentials not found in environment variables")
+        
+        # Initialize Binance client with testnet
+        self.client = Client(self.api_key, self.api_secret, testnet=True)
+        logger.info("Binance Testnet client initialized successfully")
+
+    def get_account_info(self) -> Dict:
+        """Get account information."""
+        try:
+            account_info = self.client.get_account()
+            logger.info("Retrieved account information successfully")
+            return account_info
+        except BinanceAPIException as e:
+            logger.error(f"Error getting account info: {str(e)}")
+            raise
+
+    def get_symbol_price(self, symbol: str) -> Dict:
+        """Get current price for a symbol."""
+        try:
+            price = self.client.get_symbol_ticker(symbol=symbol)
+            logger.info(f"Retrieved price for {symbol}")
+            return price
+        except BinanceAPIException as e:
+            logger.error(f"Error getting price for {symbol}: {str(e)}")
+            raise
+
+    def get_historical_klines(self, symbol: str, interval: str, 
+                            start_time: Optional[datetime] = None,
+                            limit: int = 500) -> List[Dict]:
+        """
+        Get historical klines/candlestick data.
+        
+        Args:
+            symbol: Trading pair symbol (e.g., 'BTCUSDT')
+            interval: Kline interval (e.g., '1h', '4h', '1d')
+            start_time: Start time for historical data
+            limit: Number of records to fetch (max 1000)
+        """
+        try:
+            klines = self.client.get_klines(
+                symbol=symbol,
+                interval=interval,
+                startTime=int(start_time.timestamp() * 1000) if start_time else None,
+                limit=limit
+            )
+            
+            # Convert klines to more readable format
+            formatted_klines = []
+            for k in klines:
+                formatted_klines.append({
+                    'timestamp': datetime.fromtimestamp(k[0] / 1000),
+                    'open': float(k[1]),
+                    'high': float(k[2]),
+                    'low': float(k[3]),
+                    'close': float(k[4]),
+                    'volume': float(k[5]),
+                    'close_time': datetime.fromtimestamp(k[6] / 1000),
+                    'quote_volume': float(k[7]),
+                    'trades': int(k[8])
+                })
+            
+            logger.info(f"Retrieved {len(formatted_klines)} klines for {symbol}")
+            return formatted_klines
+        except BinanceAPIException as e:
+            logger.error(f"Error getting historical data for {symbol}: {str(e)}")
+            raise
+
+    def place_test_order(self, symbol: str, side: str, quantity: float, 
+                        order_type: str = 'MARKET') -> Dict:
+        """
+        Place a test order (doesn't actually execute).
+        
+        Args:
+            symbol: Trading pair symbol (e.g., 'BTCUSDT')
+            side: 'BUY' or 'SELL'
+            quantity: Amount to trade
+            order_type: Order type (default: 'MARKET')
+        """
+        try:
+            order = self.client.create_test_order(
+                symbol=symbol,
+                side=side,
+                type=order_type,
+                quantity=quantity
+            )
+            logger.info(f"Test order placed successfully: {side} {quantity} {symbol}")
+            return order
+        except BinanceAPIException as e:
+            logger.error(f"Error placing test order: {str(e)}")
+            raise
+
+    def get_exchange_info(self, symbol: Optional[str] = None) -> Dict:
+        """Get exchange information for symbol(s)."""
+        try:
+            if symbol:
+                info = self.client.get_symbol_info(symbol)
+            else:
+                info = self.client.get_exchange_info()
+            logger.info("Retrieved exchange information successfully")
+            return info
+        except BinanceAPIException as e:
+            logger.error(f"Error getting exchange info: {str(e)}")
+            raise
 
 if __name__ == "__main__":
     # Example usage
