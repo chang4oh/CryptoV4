@@ -77,8 +77,6 @@ journal/
 # Trading specific
 trading_history/
 backtesting_results/
-*.json
-!package.json
 test_results/
 
 # API and Credentials
@@ -98,3 +96,46 @@ sentiment_cache/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Node.js / React
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
+
+# React build outputs
+app/frontend/build/
+app/frontend/.cache/
+app/frontend/dist/
+
+# React testing
+app/frontend/coverage/
+
+# Misc React files
+.eslintcache
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Package files (keep package.json, ignore lock files for now)
+package-lock.json
+yarn.lock
+npm-shrinkwrap.json
+
+# Local dev server
+.vercel
+.netlify
+
+# Next.js
+.next/
+out/
+
+# Webpack
+.webpack/
+
+# Allow JSON files in specific locations
+!package.json
+!app/frontend/package.json
+!app/frontend/public/manifest.json

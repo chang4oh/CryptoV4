@@ -9,6 +9,7 @@ A sentiment-based cryptocurrency trading system that uses news sentiment analysi
 - **Trading Logic**: Combines sentiment and market data to generate trading signals
 - **Trade Execution**: Executes trades on Binance Testnet
 - **MongoDB Integration**: Stores all data and trading history in MongoDB
+- **Web Dashboard**: Visualize trading performance and monitor system status
 
 ## Requirements
 
@@ -41,6 +42,11 @@ Run the trading system with default settings:
 start_trading.bat
 ```
 
+Start the web dashboard:
+```
+start_dashboard.bat
+```
+
 ### Command Line Options
 
 Run the trading system with custom settings:
@@ -51,6 +57,19 @@ python main.py --interval 600 --test
 Options:
 - `--interval`: Time between trading cycles in seconds (default: 300)
 - `--test`: Run in test mode (generate signals but don't execute trades)
+
+### Web Dashboard
+
+The web dashboard provides a real-time view of your trading system:
+
+- **Account Status**: View current balances and profit/loss
+- **Market Data**: Current price, 24h change, and sentiment score
+- **Trading Signals**: Current trading signal based on sentiment and price trends
+- **Recent Trades**: List of recent trades with details
+- **News & Sentiment**: Latest news items with sentiment analysis
+- **Performance Chart**: Visualization of trading history
+
+Access the dashboard at: http://localhost:5000
 
 ### Configuration
 
@@ -68,6 +87,7 @@ Adjust trading parameters in `config.py`:
 - **MarketDataCollector**: Collects market data from Binance
 - **TradeExecutor**: Executes trades on Binance
 - **SentimentTrader**: Main trading logic
+- **Dashboard**: Web interface for monitoring the system
 
 ## Logs
 

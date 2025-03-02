@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoV4 Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #343a40;
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: bold;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .badge-buy {
+            background-color: #28a745;
+        }
+        .badge-sell {
+            background-color: #dc3545;
+        }
+        .badge-neutral {
+            background-color: #6c757d;
+        }
+        #refreshStatus {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">CryptoV4 Trading Dashboard</a>
+            <div class="d-flex text-white">
+                <div id="lastUpdated">Last updated: Never</div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <!-- Account Status -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Account Status</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <h5>USDT Balance</h5>
+                                <h3 id="usdtBalance">Loading...</h3>
+                            </div>
+                            <div class="col-6">
+                                <h5>BTC Balance</h5>
+                                <h3 id="btcBalance">Loading...</h3>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row mt-3">
+                            <div class="col-6">
+                                <h5>Total Trades</h5>
+                                <h3 id="totalTrades">Loading...</h3>
+                            </div>
+                            <div class="col-6">
+                                <h5>Profit/Loss</h5>
+                                <h3 id="profitLoss">Loading...</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Market Data -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Market Data ({{ symbol }})</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <h5>Current Price</h5>
+                                <h3 id="currentPrice">Loading...</h3>
+                            </div>
+                            <div class="col-6">
+                                <h5>24h Change</h5>
+                                <h3 id="priceChange">Loading...</h3>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row mt-3">
+                            <div class="col-6">
+                                <h5>Sentiment Score</h5>
+                                <h3 id="sentimentScore">Loading...</h3>
+                            </div>
+                            <div class="col-6">
+                                <h5>Signal</h5>
+                                <h3 id="currentSignal">
+                                    <span class="badge bg-secondary">NEUTRAL</span>
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <!-- Recent Trades -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Recent Trades</div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Side</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentTradesBody">
+                                    <tr>
+                                        <td colspan="5" class="text-center">No trades yet</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent News -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Recent News & Sentiment</div>
+                    <div class="card-body">
+                        <div id="recentNews">
+                            <p class="text-center">Loading news...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <!-- Performance Chart -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">Trading Performance</div>
+                    <div class="card-body">
+                        <canvas id="performanceChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button id="refreshStatus" class="btn btn-primary">
+        <i class="bi bi-arrow-clockwise"></i> Refresh
+    </button>
+
+    <script>
+        // Dashboard refresh interval (in milliseconds)
+        const REFRESH_INTERVAL = 30000; // 30 seconds
+        let performanceChart = null;
+
+        // Function to format currency
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(value);
+        }
+
+        // Function to format BTC amount
+        function formatBTC(value) {
+            return parseFloat(value).toFixed(8) + " BTC";
+        }
+
+        // Function to update dashboard data
+        function updateDashboard() {
+            // Update last updated time
+            document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+
+            // Fetch trading status
+            fetch('/api/trading_status')
+                .then(response => response.json())
+                .then(data => {
+                    // Update market data
+                    if (data.market_data) {
+                        document.getElementById('currentPrice').textContent = formatCurrency(data.market_data.price);
+                        
+                        const priceChangeElement = document.getElementById('priceChange');
+                        const priceChangePct = parseFloat(data.market_data.price_change_pct);
+                        priceChangeElement.textContent = priceChangePct.toFixed(2) + '%';
+                        priceChangeElement.className = priceChangePct >= 0 ? 'text-success' : 'text-danger';
+                    }
+
+                    // Update sentiment score
+                    if (data.avg_sentiment !== undefined) {
+                        const sentimentElement = document.getElementById('sentimentScore');
+                        const sentiment = parseFloat(data.avg_sentiment);
+                        sentimentElement.textContent = sentiment.toFixed(4);
+                        
+                        // Color based on sentiment
+                        if (sentiment > 0.2) {
+                            sentimentElement.className = 'text-success';
+                        } else if (sentiment < -0.2) {
+                            sentimentElement.className = 'text-danger';
+                        } else {
+                            sentimentElement.className = 'text-secondary';
+                        }
+
+                        // Update signal based on sentiment and price change
+                        const signalElement = document.getElementById('currentSignal');
+                        if (sentiment > 0.2 && data.market_data && parseFloat(data.market_data.price_change_pct) > 0) {
+                            signalElement.innerHTML = '<span class="badge bg-success">BUY</span>';
+                        } else if (sentiment < -0.2 && data.market_data && parseFloat(data.market_data.price_change_pct) < 0) {
+                            signalElement.innerHTML = '<span class="badge bg-danger">SELL</span>';
+                        } else {
+                            signalElement.innerHTML = '<span class="badge bg-secondary">NEUTRAL</span>';
+                        }
+                    }
+
+                    // Update recent trades
+                    if (data.latest_trades && data.latest_trades.length > 0) {
+                        const tradesBody = document.getElementById('recentTradesBody');
+                        tradesBody.innerHTML = '';
+                        
+                        data.latest_trades.forEach(trade => {
+                            const row = document.createElement('tr');
+                            const time = new Date(trade.timestamp).toLocaleTimeString();
+                            const price = parseFloat(trade.price);
+                            const quantity = parseFloat(trade.executed_qty);
+                            const value = price * quantity;
+                            
+                            row.innerHTML = `
+                                <td>${time}</td>
+                                <td><span class="badge ${trade.side === 'BUY' ? 'bg-success' : 'bg-danger'}">${trade.side}</span></td>
+                                <td>${formatCurrency(price)}</td>
+                                <td>${quantity.toFixed(8)}</td>
+                                <td>${formatCurrency(value)}</td>
+                            `;
+                            tradesBody.appendChild(row);
+                        });
+                    }
+
+                    // Update recent news
+                    if (data.sentiment_data && data.sentiment_data.length > 0) {
+                        const newsContainer = document.getElementById('recentNews');
+                        newsContainer.innerHTML = '';
+                        
+                        data.sentiment_data.forEach(item => {
+                            const sentiment = parseFloat(item.sentiment_score);
+                            let sentimentClass = 'text-secondary';
+                            if (sentiment > 0.2) sentimentClass = 'text-success';
+                            if (sentiment < -0.2) sentimentClass = 'text-danger';
+                            
+                            const newsItem = document.createElement('div');
+                            newsItem.className = 'mb-3';
+                            newsItem.innerHTML = `
+                                <div class="d-flex justify-content-between">
+                                    <small>${new Date(item.timestamp).toLocaleString()}</small>
+                                    <small class="${sentimentClass}">Sentiment: ${sentiment.toFixed(4)}</small>
+                                </div>
+                                <p class="mb-0"><strong>${item.title || 'No title'}</strong></p>
+                                <p class="mb-0 text-truncate">${item.content || 'No content'}</p>
+                            `;
+                            newsContainer.appendChild(newsItem);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching trading status:', error));
+
+            // Fetch performance data
+            fetch('/api/performance')
+                .then(response => response.json())
+                .then(data => {
+                    // Update account metrics
+                    document.getElementById('totalTrades').textContent = data.total_trades;
+                    
+                    const profitLossElement = document.getElementById('profitLoss');
+                    profitLossElement.textContent = formatCurrency(data.profit_loss);
+                    profitLossElement.className = data.profit_loss >= 0 ? 'text-success' : 'text-danger';
+                    
+                    // Update performance chart
+                    updatePerformanceChart(data.trade_history);
+                })
+                .catch(error => console.error('Error fetching performance data:', error));
+        }
+
+        // Function to update performance chart
+        function updatePerformanceChart(tradeHistory) {
+            if (!tradeHistory || tradeHistory.length === 0) return;
+            
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            // Prepare data for chart
+            const labels = tradeHistory.map(trade => new Date(trade.timestamp).toLocaleString());
+            const buyData = tradeHistory.map(trade => trade.side === 'BUY' ? trade.value : null);
+            const sellData = tradeHistory.map(trade => trade.side === 'SELL' ? trade.value : null);
+            
+            // Destroy existing chart if it exists
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+            
+            // Create new chart
+            performanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Buy Orders',
+                            data: buyData,
+                            backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Sell Orders',
+                            data: sellData,
+                            backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                            borderColor: 'rgba(220, 53, 69, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Value (USDT)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Trade Time'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initial update
+        updateDashboard();
+
+        // Set up refresh interval
+        setInterval(updateDashboard, REFRESH_INTERVAL);
+
+        // Manual refresh button
+        document.getElementById('refreshStatus').addEventListener('click', updateDashboard);
+    </script>
+</body>
+</html> 

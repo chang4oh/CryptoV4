@@ -1,0 +1,250 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.dashboard {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  padding-bottom: 60px;
+}
+
+.dashboard-status-bar {
+  padding: 8px 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.card-header {
+  background-color: #343a40;
+  color: white;
+  font-weight: bold;
+  padding: 12px 16px;
+}
+
+.card-body {
+  padding: 16px;
+}
+
+.navbar-brand {
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.refresh-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.news-item {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 12px;
+}
+
+.news-item:last-child {
+  border-bottom: none;
+}
+
+.account-status .icon-container,
+.market-data .icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #f8f9fa;
+  color: #0d6efd;
+}
+
+.sentiment-bar,
+.trend-bar {
+  height: 8px;
+  border-radius: 4px;
+}
+
+.trades-table th,
+.trades-table td {
+  vertical-align: middle;
+}
+
+.trading-controls .form-check-input {
+  width: 2.5em;
+  height: 1.25em;
+}
+
+.settings .form-check-input {
+  margin-right: 8px;
+}
+
+.settings .nav-link {
+  padding: 8px 16px;
+}
+
+.chart-container {
+  position: relative;
+  width: 100%;
+}
+
+.chart-controls {
+  margin-bottom: 16px;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+@media (max-width: 768px) {
+  #root {
+    padding: 0;
+  }
+  
+  .card-body h3 {
+    font-size: 1.5rem;
+  }
+  
+  .card-body h5 {
+    font-size: 1rem;
+  }
+  
+  .table th, .table td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .refresh-button {
+    width: 50px;
+    height: 50px;
+    bottom: 15px;
+    right: 15px;
+  }
+  
+  .dashboard-controls {
+    flex-direction: column;
+  }
+  
+  .dashboard-controls .btn {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}
+
+.dark-mode {
+  background-color: #212529;
+  color: #f8f9fa;
+}
+
+.dark-mode .card {
+  background-color: #343a40;
+  color: #f8f9fa;
+}
+
+.dark-mode .card-header {
+  background-color: #212529;
+}
+
+.dark-mode .table {
+  color: #f8f9fa;
+}
+
+.dark-mode .table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .text-muted {
+  color: #adb5bd !important;
+}
+
+.dark-mode .form-control,
+.dark-mode .input-group-text {
+  background-color: #495057;
+  border-color: #6c757d;
+  color: #f8f9fa;
+}
+
+.dark-mode .form-control:focus {
+  background-color: #495057;
+  color: #f8f9fa;
+}
+
+.dark-mode .dashboard-status-bar {
+  background-color: #343a40;
+  border-bottom-color: #212529;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.signal-animate {
+  animation: pulse 2s infinite;
+}
