@@ -1,0 +1,13 @@
+{
+  "name": "cryptov4",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "cd app/frontend && npm run dev",
+    "build": "cd app/frontend && npm run build",
+    "serve": "cd app/frontend && npm run preview"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+} 

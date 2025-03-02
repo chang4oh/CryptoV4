@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../services/api';
 import * as mockData from '../services/mockData';
 
-// Flag to control whether to use mock data
-const USE_MOCK_DATA = true;
+// Flag to control whether to use mock data from environment
+const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'false' ? false : true;
 
 /**
  * Custom hook for fetching and managing dashboard data
