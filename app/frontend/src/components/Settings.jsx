@@ -1,358 +1,257 @@
-import { useState, useEffect } from 'react';
-import { Form, Button, Row, Col, Card, Alert, Spinner, Tabs, Tab } from 'react-bootstrap';
-import { FaSave, FaUndo, FaCog } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { Container, Form, Button, Card, Row, Col, Alert } from 'react-bootstrap';
 
-const Settings = ({ onSaveSettings, onRestoreDefaults, isLoading, initialSettings }) => {
-  // Default settings
-  const defaultSettings = {
-    // Trading parameters
-    trading: {
-      stop_loss_percentage: 5,
-      take_profit_percentage: 10,
-      max_trade_size_percentage: 20,
-      sentiment_threshold_buy: 0.2,
-      sentiment_threshold_sell: -0.2,
-      enable_auto_trading: false
-    },
-    // Dashboard preferences
-    dashboard: {
-      refresh_interval_seconds: 30,
-      dark_mode: false,
-      show_notifications: true,
-      chart_timespan_days: 30
-    }
-  };
+const Settings = ({ toggleDarkMode, isDarkMode }) => {
+  const [settings, setSettings] = useState({
+    darkMode: isDarkMode,
+    notifications: true,
+    autoRefresh: true,
+    refreshInterval: 60,
+    tradingBotEnabled: false,
+    riskLevel: 'medium',
+    apiKey: '',
+    apiSecret: '******************'
+  });
   
-  // State for settings
-  const [settings, setSettings] = useState({ ...defaultSettings });
-  const [saveStatus, setSaveStatus] = useState(null);
-  const [activeTab, setActiveTab] = useState('trading');
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState(null);
   
-  // Apply initialSettings from props when available
   useEffect(() => {
-    if (initialSettings) {
-      setSettings(initialSettings);
-    }
-  }, [initialSettings]);
+    // Update dark mode when prop changes
+    setSettings(prev => ({ ...prev, darkMode: isDarkMode }));
+  }, [isDarkMode]);
   
-  // Handle input change
-  const handleInputChange = (section, field, value) => {
-    setSettings(prevSettings => ({
-      ...prevSettings,
-      [section]: {
-        ...prevSettings[section],
-        [field]: value
-      }
+  const handleChange = (key, value) => {
+    setSettings(prev => ({
+      ...prev,
+      [key]: value
     }));
-  };
-  
-  // Handle number input change with validation
-  const handleNumberInputChange = (section, field, value, min, max) => {
-    let parsedValue = parseFloat(value);
     
-    // Ensure it's a valid number and within range
-    if (!isNaN(parsedValue)) {
-      if (min !== undefined && parsedValue < min) parsedValue = min;
-      if (max !== undefined && parsedValue > max) parsedValue = max;
-      
-      handleInputChange(section, field, parsedValue);
-    } else if (value === '') {
-      // Allow empty string for user typing
-      handleInputChange(section, field, value);
+    // Handle dark mode toggle
+    if (key === 'darkMode') {
+      toggleDarkMode();
     }
   };
   
-  // Handle save settings
-  const handleSaveSettings = async () => {
-    setSaveStatus({ saving: true });
+  const handleSave = (e) => {
+    e.preventDefault();
     
     try {
-      // Call the onSaveSettings prop
-      if (onSaveSettings) {
-        await onSaveSettings(settings);
-      }
+      // Save settings to localStorage
+      localStorage.setItem('appSettings', JSON.stringify({
+        ...settings,
+        apiSecret: '******************', // Don't store actual secret
+      }));
       
-      setSaveStatus({ success: true, message: 'Settings saved successfully!' });
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setSaveStatus(null);
-      }, 3000);
-    } catch (error) {
-      setSaveStatus({ error: true, message: `Failed to save settings: ${error.message}` });
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (err) {
+      setError('Failed to save settings. Please try again.');
     }
   };
   
-  // Handle restore defaults
-  const handleRestoreDefaults = async () => {
-    try {
-      // Call the onRestoreDefaults prop
-      if (onRestoreDefaults) {
-        const defaultSettings = await onRestoreDefaults();
-        if (defaultSettings) {
-          setSettings(defaultSettings);
-        } else {
-          setSettings({ ...defaultSettings });
-        }
-      } else {
-        setSettings({ ...defaultSettings });
-      }
-      
-      setSaveStatus({ success: true, message: 'Default settings restored!' });
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setSaveStatus(null);
-      }, 3000);
-    } catch (error) {
-      setSaveStatus({ error: true, message: `Failed to restore defaults: ${error.message}` });
+  const handleReset = () => {
+    const defaultSettings = {
+      darkMode: false,
+      notifications: true,
+      autoRefresh: true,
+      refreshInterval: 60,
+      tradingBotEnabled: false,
+      riskLevel: 'medium',
+      apiKey: '',
+      apiSecret: ''
+    };
+    
+    setSettings(defaultSettings);
+    
+    // If dark mode changes, toggle it
+    if (defaultSettings.darkMode !== isDarkMode) {
+      toggleDarkMode();
     }
+    
+    // Clear localStorage
+    localStorage.removeItem('appSettings');
   };
-
+  
   return (
-    <div className="settings">
-      <div className="d-flex align-items-center mb-3">
-        <FaCog className="me-2" />
-        <h4 className="mb-0">Trading Bot Settings</h4>
-      </div>
+    <Container className="settings-page py-4">
+      <h4 className="mb-4">Settings</h4>
       
-      {saveStatus?.saving ? (
-        <Alert variant="info">
-          <Spinner animation="border" size="sm" className="me-2" />
-          Saving settings...
+      {showSuccess && (
+        <Alert variant="success" className="success-message">
+          Settings saved successfully!
         </Alert>
-      ) : saveStatus?.success ? (
-        <Alert variant="success">
-          {saveStatus.message}
-        </Alert>
-      ) : saveStatus?.error ? (
-        <Alert variant="danger">
-          {saveStatus.message}
-        </Alert>
-      ) : null}
+      )}
       
-      <Tabs
-        activeKey={activeTab}
-        onSelect={(k) => setActiveTab(k)}
-        className="mb-4"
-      >
-        <Tab eventKey="trading" title="Trading Parameters">
-          <Card className="mb-4">
-            <Card.Body>
-              <h5 className="mb-3">Risk Management</h5>
-              <Row className="mb-3">
-                <Col md={6}>
-                  <Form.Group>
-                    <Form.Label>Stop Loss Percentage</Form.Label>
-                    <Form.Control
-                      type="number"
-                      min={0.1}
-                      max={50}
-                      step={0.1}
-                      value={settings.trading.stop_loss_percentage}
-                      onChange={(e) => handleNumberInputChange('trading', 'stop_loss_percentage', e.target.value, 0.1, 50)}
-                      disabled={isLoading}
-                    />
-                    <Form.Text className="text-muted">
-                      Maximum loss before selling (0.1-50%)
-                    </Form.Text>
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group>
-                    <Form.Label>Take Profit Percentage</Form.Label>
-                    <Form.Control
-                      type="number"
-                      min={0.1}
-                      max={100}
-                      step={0.1}
-                      value={settings.trading.take_profit_percentage}
-                      onChange={(e) => handleNumberInputChange('trading', 'take_profit_percentage', e.target.value, 0.1, 100)}
-                      disabled={isLoading}
-                    />
-                    <Form.Text className="text-muted">
-                      Target profit before selling (0.1-100%)
-                    </Form.Text>
-                  </Form.Group>
-                </Col>
-              </Row>
-              
-              <Row className="mb-3">
-                <Col md={6}>
-                  <Form.Group>
-                    <Form.Label>Max Trade Size (%)</Form.Label>
-                    <Form.Control
-                      type="number"
-                      min={1}
-                      max={100}
-                      step={1}
-                      value={settings.trading.max_trade_size_percentage}
-                      onChange={(e) => handleNumberInputChange('trading', 'max_trade_size_percentage', e.target.value, 1, 100)}
-                      disabled={isLoading}
-                    />
-                    <Form.Text className="text-muted">
-                      Maximum percentage of portfolio per trade
-                    </Form.Text>
-                  </Form.Group>
-                </Col>
-              </Row>
-              
-              <h5 className="mb-3 mt-4">Signal Parameters</h5>
-              <Row className="mb-3">
-                <Col md={6}>
-                  <Form.Group>
-                    <Form.Label>Buy Sentiment Threshold</Form.Label>
-                    <Form.Control
-                      type="number"
-                      min={0}
-                      max={1}
-                      step={0.05}
-                      value={settings.trading.sentiment_threshold_buy}
-                      onChange={(e) => handleNumberInputChange('trading', 'sentiment_threshold_buy', e.target.value, 0, 1)}
-                      disabled={isLoading}
-                    />
-                    <Form.Text className="text-muted">
-                      Minimum sentiment score for BUY signals (0-1)
-                    </Form.Text>
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group>
-                    <Form.Label>Sell Sentiment Threshold</Form.Label>
-                    <Form.Control
-                      type="number"
-                      min={-1}
-                      max={0}
-                      step={0.05}
-                      value={settings.trading.sentiment_threshold_sell}
-                      onChange={(e) => handleNumberInputChange('trading', 'sentiment_threshold_sell', e.target.value, -1, 0)}
-                      disabled={isLoading}
-                    />
-                    <Form.Text className="text-muted">
-                      Maximum sentiment score for SELL signals (-1-0)
-                    </Form.Text>
-                  </Form.Group>
-                </Col>
-              </Row>
-              
-              <Form.Group className="mb-3">
-                <Form.Check
-                  type="switch"
-                  id="auto-trading-switch"
-                  label="Enable Automated Trading"
-                  checked={settings.trading.enable_auto_trading}
-                  onChange={(e) => handleInputChange('trading', 'enable_auto_trading', e.target.checked)}
-                  disabled={isLoading}
-                />
-                <Form.Text className="text-muted">
-                  When enabled, the bot will automatically place orders based on signals
-                </Form.Text>
-              </Form.Group>
-            </Card.Body>
-          </Card>
-        </Tab>
+      {error && (
+        <Alert variant="danger" onClose={() => setError(null)} dismissible>
+          {error}
+        </Alert>
+      )}
+      
+      <Form onSubmit={handleSave}>
+        <Row>
+          <Col lg={6}>
+            {/* Appearance Settings */}
+            <Card className="mb-4">
+              <Card.Header>
+                <h5 className="mb-0">Appearance</h5>
+              </Card.Header>
+              <Card.Body>
+                <Form.Group className="mb-3">
+                  <Form.Check 
+                    type="switch"
+                    id="dark-mode-switch"
+                    label="Dark Mode"
+                    checked={settings.darkMode}
+                    onChange={(e) => handleChange('darkMode', e.target.checked)}
+                  />
+                  <Form.Text className="text-muted">
+                    Enable dark mode for reduced eye strain in low-light environments
+                  </Form.Text>
+                </Form.Group>
+              </Card.Body>
+            </Card>
+            
+            {/* Notifications Settings */}
+            <Card className="mb-4">
+              <Card.Header>
+                <h5 className="mb-0">Notifications</h5>
+              </Card.Header>
+              <Card.Body>
+                <Form.Group className="mb-3">
+                  <Form.Check 
+                    type="switch"
+                    id="notifications-switch"
+                    label="Enable Notifications"
+                    checked={settings.notifications}
+                    onChange={(e) => handleChange('notifications', e.target.checked)}
+                  />
+                  <Form.Text className="text-muted">
+                    Receive notifications for important events and alerts
+                  </Form.Text>
+                </Form.Group>
+              </Card.Body>
+            </Card>
+            
+            {/* Data Settings */}
+            <Card className="mb-4">
+              <Card.Header>
+                <h5 className="mb-0">Data & Performance</h5>
+              </Card.Header>
+              <Card.Body>
+                <Form.Group className="mb-3">
+                  <Form.Check 
+                    type="switch"
+                    id="auto-refresh-switch"
+                    label="Auto-Refresh Data"
+                    checked={settings.autoRefresh}
+                    onChange={(e) => handleChange('autoRefresh', e.target.checked)}
+                  />
+                  <Form.Text className="text-muted">
+                    Automatically refresh market data
+                  </Form.Text>
+                </Form.Group>
+                
+                <Form.Group className="mb-3">
+                  <Form.Label>Refresh Interval (seconds)</Form.Label>
+                  <Form.Control 
+                    type="number" 
+                    value={settings.refreshInterval}
+                    onChange={(e) => handleChange('refreshInterval', Number(e.target.value))}
+                    disabled={!settings.autoRefresh}
+                    min="10"
+                    max="300"
+                  />
+                  <Form.Text className="text-muted">
+                    How frequently to refresh market data (10-300 seconds)
+                  </Form.Text>
+                </Form.Group>
+              </Card.Body>
+            </Card>
+          </Col>
+          
+          <Col lg={6}>
+            {/* Trading Bot Settings */}
+            <Card className="mb-4">
+              <Card.Header>
+                <h5 className="mb-0">Trading Bot</h5>
+              </Card.Header>
+              <Card.Body>
+                <Form.Group className="mb-3">
+                  <Form.Check 
+                    type="switch"
+                    id="trading-bot-switch"
+                    label="Enable Automated Trading"
+                    checked={settings.tradingBotEnabled}
+                    onChange={(e) => handleChange('tradingBotEnabled', e.target.checked)}
+                  />
+                  <Form.Text className="text-muted">
+                    Allow the trading bot to execute trades automatically
+                  </Form.Text>
+                </Form.Group>
+                
+                <Form.Group className="mb-3">
+                  <Form.Label>Risk Level</Form.Label>
+                  <Form.Select 
+                    value={settings.riskLevel}
+                    onChange={(e) => handleChange('riskLevel', e.target.value)}
+                    disabled={!settings.tradingBotEnabled}
+                  >
+                    <option value="low">Low - Conservative trades</option>
+                    <option value="medium">Medium - Balanced approach</option>
+                    <option value="high">High - Aggressive strategy</option>
+                  </Form.Select>
+                  <Form.Text className="text-muted">
+                    Determine how aggressively the bot will trade
+                  </Form.Text>
+                </Form.Group>
+              </Card.Body>
+            </Card>
+            
+            {/* API Settings */}
+            <Card className="mb-4">
+              <Card.Header>
+                <h5 className="mb-0">API Configuration</h5>
+              </Card.Header>
+              <Card.Body>
+                <Form.Group className="mb-3">
+                  <Form.Label>API Key</Form.Label>
+                  <Form.Control 
+                    type="text" 
+                    placeholder="Enter your API key"
+                    value={settings.apiKey}
+                    onChange={(e) => handleChange('apiKey', e.target.value)}
+                  />
+                </Form.Group>
+                
+                <Form.Group className="mb-3">
+                  <Form.Label>API Secret</Form.Label>
+                  <Form.Control 
+                    type="password" 
+                    placeholder="Enter your API secret"
+                    value={settings.apiSecret}
+                    onChange={(e) => handleChange('apiSecret', e.target.value)}
+                  />
+                  <Form.Text className="text-muted">
+                    Your API secret is stored securely and never sent to our servers
+                  </Form.Text>
+                </Form.Group>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
         
-        <Tab eventKey="dashboard" title="Dashboard Preferences">
-          <Card className="mb-4">
-            <Card.Body>
-              <Row className="mb-3">
-                <Col md={6}>
-                  <Form.Group>
-                    <Form.Label>Refresh Interval (seconds)</Form.Label>
-                    <Form.Control
-                      type="number"
-                      min={5}
-                      max={300}
-                      step={5}
-                      value={settings.dashboard.refresh_interval_seconds}
-                      onChange={(e) => handleNumberInputChange('dashboard', 'refresh_interval_seconds', e.target.value, 5, 300)}
-                      disabled={isLoading}
-                    />
-                    <Form.Text className="text-muted">
-                      How often to refresh dashboard data (5-300 seconds)
-                    </Form.Text>
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group>
-                    <Form.Label>Chart Timespan (days)</Form.Label>
-                    <Form.Control
-                      type="number"
-                      min={1}
-                      max={365}
-                      step={1}
-                      value={settings.dashboard.chart_timespan_days}
-                      onChange={(e) => handleNumberInputChange('dashboard', 'chart_timespan_days', e.target.value, 1, 365)}
-                      disabled={isLoading}
-                    />
-                    <Form.Text className="text-muted">
-                      Number of days to display in performance charts
-                    </Form.Text>
-                  </Form.Group>
-                </Col>
-              </Row>
-              
-              <Form.Group className="mb-3">
-                <Form.Check
-                  type="switch"
-                  id="dark-mode-switch"
-                  label="Dark Mode"
-                  checked={settings.dashboard.dark_mode}
-                  onChange={(e) => handleInputChange('dashboard', 'dark_mode', e.target.checked)}
-                  disabled={isLoading}
-                />
-                <Form.Text className="text-muted">
-                  Enable dark mode for the dashboard
-                </Form.Text>
-              </Form.Group>
-              
-              <Form.Group className="mb-3">
-                <Form.Check
-                  type="switch"
-                  id="notifications-switch"
-                  label="Show Notifications"
-                  checked={settings.dashboard.show_notifications}
-                  onChange={(e) => handleInputChange('dashboard', 'show_notifications', e.target.checked)}
-                  disabled={isLoading}
-                />
-                <Form.Text className="text-muted">
-                  Show browser notifications for important events
-                </Form.Text>
-              </Form.Group>
-            </Card.Body>
-          </Card>
-        </Tab>
-      </Tabs>
-      
-      <div className="d-flex justify-content-between">
-        <Button
-          variant="outline-secondary"
-          onClick={handleRestoreDefaults}
-          disabled={isLoading}
-        >
-          <FaUndo className="me-2" />
-          Restore Defaults
-        </Button>
-        
-        <Button
-          variant="primary"
-          onClick={handleSaveSettings}
-          disabled={isLoading || saveStatus?.saving}
-        >
-          {saveStatus?.saving ? (
-            <>
-              <Spinner animation="border" size="sm" className="me-2" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <FaSave className="me-2" />
-              Save Settings
-            </>
-          )}
-        </Button>
-      </div>
-    </div>
+        <div className="d-flex justify-content-between mt-4">
+          <Button variant="outline-danger" onClick={handleReset}>
+            Reset to Defaults
+          </Button>
+          <Button variant="primary" type="submit">
+            Save Settings
+          </Button>
+        </div>
+      </Form>
+    </Container>
   );
 };
 

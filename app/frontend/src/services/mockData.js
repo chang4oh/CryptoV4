@@ -226,6 +226,258 @@ export const getMockSettings = () => {
   };
 };
 
+/**
+ * Mock cryptocurrency data for development and testing
+ */
+export const mockCryptoData = [
+  {
+    id: 1,
+    name: 'Bitcoin',
+    symbol: 'BTC',
+    logo: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',
+    price: 64352.87,
+    marketCap: 1253745678901,
+    volume24h: 28764539872,
+    priceChange24h: 2.34,
+    priceChange7d: 5.67,
+    category: 'Currency',
+    description: 'Bitcoin is a decentralized digital currency, without a central bank or single administrator.',
+    trending: true
+  },
+  {
+    id: 2,
+    name: 'Ethereum',
+    symbol: 'ETH',
+    logo: 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
+    price: 3256.42,
+    marketCap: 389754321098,
+    volume24h: 15679432876,
+    priceChange24h: 1.28,
+    priceChange7d: -2.15,
+    category: 'Smart Contract Platform',
+    description: 'Ethereum is an open-source, blockchain-based platform that enables developers to build and deploy smart contracts.',
+    trending: true
+  },
+  {
+    id: 3,
+    name: 'Cardano',
+    symbol: 'ADA',
+    logo: 'https://cryptologos.cc/logos/cardano-ada-logo.png',
+    price: 0.43,
+    marketCap: 15078653421,
+    volume24h: 567891234,
+    priceChange24h: -1.23,
+    priceChange7d: 3.45,
+    category: 'Smart Contract Platform',
+    description: 'Cardano is a proof-of-stake blockchain platform that says its goal is to allow changemakers, innovators and visionaries to bring about positive global change.',
+    trending: false
+  },
+  {
+    id: 4,
+    name: 'Solana',
+    symbol: 'SOL',
+    logo: 'https://cryptologos.cc/logos/solana-sol-logo.png',
+    price: 128.67,
+    marketCap: 52765432198,
+    volume24h: 3456789012,
+    priceChange24h: 4.56,
+    priceChange7d: 12.34,
+    category: 'Smart Contract Platform',
+    description: 'Solana is a high-performance blockchain supporting builders around the world creating crypto apps that scale.',
+    trending: true
+  },
+  {
+    id: 5,
+    name: 'Ripple',
+    symbol: 'XRP',
+    logo: 'https://cryptologos.cc/logos/xrp-xrp-logo.png',
+    price: 0.58,
+    marketCap: 31452678903,
+    volume24h: 1234567890,
+    priceChange24h: 0.78,
+    priceChange7d: -1.23,
+    category: 'Payment',
+    description: 'Ripple is a real-time gross settlement system, currency exchange and remittance network created by Ripple Labs Inc.',
+    trending: false
+  },
+  {
+    id: 6,
+    name: 'Dogecoin',
+    symbol: 'DOGE',
+    logo: 'https://cryptologos.cc/logos/dogecoin-doge-logo.png',
+    price: 0.12,
+    marketCap: 16543219876,
+    volume24h: 987654321,
+    priceChange24h: -2.34,
+    priceChange7d: -5.67,
+    category: 'Meme',
+    description: 'Dogecoin is a cryptocurrency created by software engineers Billy Markus and Jackson Palmer as a "joke".',
+    trending: false
+  },
+  {
+    id: 7,
+    name: 'Polkadot',
+    symbol: 'DOT',
+    logo: 'https://cryptologos.cc/logos/polkadot-new-dot-logo.png',
+    price: 6.24,
+    marketCap: 7891234567,
+    volume24h: 345678901,
+    priceChange24h: 1.23,
+    priceChange7d: 4.56,
+    category: 'Interoperability',
+    description: 'Polkadot is a sharded multichain network that connects different specialized blockchains into a single network.',
+    trending: false
+  },
+  {
+    id: 8,
+    name: 'Chainlink',
+    symbol: 'LINK',
+    logo: 'https://cryptologos.cc/logos/chainlink-link-logo.png',
+    price: 14.65,
+    marketCap: 7654321098,
+    volume24h: 234567890,
+    priceChange24h: 3.45,
+    priceChange7d: 7.89,
+    category: 'Oracle',
+    description: 'Chainlink is a decentralized oracle network that enables smart contracts to securely connect to external data sources, APIs, and payment systems.',
+    trending: true
+  },
+  {
+    id: 9,
+    name: 'Uniswap',
+    symbol: 'UNI',
+    logo: 'https://cryptologos.cc/logos/uniswap-uni-logo.png',
+    price: 5.78,
+    marketCap: 5678901234,
+    volume24h: 123456789,
+    priceChange24h: -0.67,
+    priceChange7d: 2.34,
+    category: 'DeFi',
+    description: 'Uniswap is a decentralized trading protocol, known for its role in facilitating automated trading of decentralized finance tokens.',
+    trending: false
+  },
+  {
+    id: 10,
+    name: 'Polygon',
+    symbol: 'MATIC',
+    logo: 'https://cryptologos.cc/logos/polygon-matic-logo.png',
+    price: 0.56,
+    marketCap: 4567890123,
+    volume24h: 98765432,
+    priceChange24h: 2.67,
+    priceChange7d: 6.78,
+    category: 'Layer 2',
+    description: 'Polygon is a protocol and a framework for building and connecting Ethereum-compatible blockchain networks.',
+    trending: true
+  }
+];
+
+/**
+ * Mock trading history data for development and testing
+ */
+export const mockTradingHistory = [
+  {
+    id: 1,
+    cryptoId: 1, // Bitcoin
+    action: 'BUY',
+    amount: 0.05,
+    price: 63245.67,
+    total: 3162.28,
+    timestamp: new Date(Date.now() - 3600000).toISOString(),
+    status: 'COMPLETED'
+  },
+  {
+    id: 2,
+    cryptoId: 1, // Bitcoin
+    action: 'SELL',
+    amount: 0.02,
+    price: 64100.89,
+    total: 1282.02,
+    timestamp: new Date(Date.now() - 7200000).toISOString(),
+    status: 'COMPLETED'
+  },
+  {
+    id: 3,
+    cryptoId: 2, // Ethereum
+    action: 'BUY',
+    amount: 1.5,
+    price: 3245.67,
+    total: 4868.51,
+    timestamp: new Date(Date.now() - 10800000).toISOString(),
+    status: 'COMPLETED'
+  },
+  {
+    id: 4,
+    cryptoId: 4, // Solana
+    action: 'BUY',
+    amount: 10,
+    price: 126.43,
+    total: 1264.30,
+    timestamp: new Date(Date.now() - 14400000).toISOString(),
+    status: 'COMPLETED'
+  },
+  {
+    id: 5,
+    cryptoId: 2, // Ethereum
+    action: 'SELL',
+    amount: 0.5,
+    price: 3256.89,
+    total: 1628.45,
+    timestamp: new Date(Date.now() - 18000000).toISOString(),
+    status: 'COMPLETED'
+  },
+  {
+    id: 6,
+    cryptoId: 8, // Chainlink
+    action: 'BUY',
+    amount: 20,
+    price: 14.32,
+    total: 286.40,
+    timestamp: new Date(Date.now() - 21600000).toISOString(),
+    status: 'COMPLETED'
+  },
+  {
+    id: 7,
+    cryptoId: 1, // Bitcoin
+    action: 'BUY',
+    amount: 0.01,
+    price: 64289.53,
+    total: 642.90,
+    timestamp: new Date(Date.now() - 25200000).toISOString(),
+    status: 'COMPLETED'
+  },
+  {
+    id: 8,
+    cryptoId: 10, // Polygon
+    action: 'BUY',
+    amount: 100,
+    price: 0.54,
+    total: 54.00,
+    timestamp: new Date(Date.now() - 28800000).toISOString(),
+    status: 'COMPLETED'
+  },
+  {
+    id: 9,
+    cryptoId: 4, // Solana
+    action: 'SELL',
+    amount: 5,
+    price: 128.76,
+    total: 643.80,
+    timestamp: new Date(Date.now() - 32400000).toISOString(),
+    status: 'COMPLETED'
+  },
+  {
+    id: 10,
+    cryptoId: 3, // Cardano
+    action: 'BUY',
+    amount: 500,
+    price: 0.43,
+    total: 215.00,
+    timestamp: new Date(Date.now() - 36000000).toISOString(),
+    status: 'COMPLETED'
+  }
+];
+
 export default {
   getMockTradingStatus,
   getMockAccountInfo,
