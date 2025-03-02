@@ -1,0 +1,59 @@
+2025-03-01 21:13:53,445 - main - INFO - Starting trading system (interval: 300s, test_mode: False)
+2025-03-01 21:13:53,457 - app.data.news_collector - INFO - Successfully connected to MongoDB
+2025-03-01 21:13:53,460 - app.data.news_collector - INFO - Dropped existing sentiment_data collection
+2025-03-01 21:13:53,497 - app.data.news_collector - INFO - Created sentiment_data collection with schema validation and indexes
+2025-03-01 21:13:53,504 - app.data.news_collector - INFO - Sentiment data collection stats: 0 documents, 0 bytes
+2025-03-01 21:13:53,505 - app.data.news_collector - INFO - NewsCollector initialized successfully
+2025-03-01 21:13:54,173 - app.data.market_data - INFO - MarketDataCollector initialized with Binance Testnet
+2025-03-01 21:13:54,888 - app.trading.trade_executor - INFO - TradeExecutor initialized with Binance Testnet
+2025-03-01 21:13:54,888 - app.trading.sentiment_trader - INFO - Sentiment trader initialized
+2025-03-01 21:13:54,888 - main - INFO - Trading BTCUSDT with 20 USDT position size
+2025-03-01 21:13:54,889 - main - INFO - Stop loss: 2.0%, Sentiment threshold: 0.2
+2025-03-01 21:13:55,923 - main - INFO - Starting trading cycle #1
+2025-03-01 21:13:55,923 - app.data.news_collector - INFO - Fetching 10 news items from CryptoCompare...
+2025-03-01 21:13:57,324 - app.data.news_collector - INFO - Received 50 news items from API
+2025-03-01 21:13:57,457 - app.data.news_collector - INFO - Processed 50 items with sentiment analysis
+2025-03-01 21:13:57,461 - app.data.news_collector - INFO - Successfully stored 50 items in sentiment_data collection
+2025-03-01 21:13:57,463 - app.data.news_collector - INFO - Found 50 items stored in the last 5 minutes
+2025-03-01 21:13:57,465 - app.trading.sentiment_trader - INFO - Average BTC sentiment: 0.1001 (threshold: 0.2)
+2025-03-01 21:13:57,626 - app.trading.sentiment_trader - INFO - Current price: $85,940.97, 24h change: 1.04%
+2025-03-01 21:13:57,782 - app.trading.sentiment_trader - INFO - Price trending up: True (threshold: 0.5%)
+2025-03-01 21:13:58,216 - app.trading.sentiment_trader - INFO - Current BTC position: 1.0
+2025-03-01 21:13:58,217 - app.trading.sentiment_trader - INFO - Checking exit conditions (have BTC position)
+2025-03-01 21:13:58,218 - app.trading.sentiment_trader - INFO - No entry price found for current position
+2025-03-01 21:13:58,218 - app.trading.sentiment_trader - INFO - No exit conditions met
+2025-03-01 21:13:58,219 - app.trading.sentiment_trader - INFO - No trading conditions met
+2025-03-01 21:13:58,219 - main - INFO - Signal generated: {'signal': 'NEUTRAL', 'reason': 'No trading conditions met'}
+2025-03-01 21:13:59,254 - main - INFO - Waiting 300 seconds until next cycle...
+2025-03-01 21:18:59,256 - main - INFO - Starting trading cycle #2
+2025-03-01 21:18:59,256 - app.data.news_collector - INFO - Fetching 10 news items from CryptoCompare...
+2025-03-01 21:19:00,631 - app.data.news_collector - INFO - Received 50 news items from API
+2025-03-01 21:19:00,726 - app.data.news_collector - INFO - Processed 50 items with sentiment analysis
+2025-03-01 21:19:00,729 - app.data.news_collector - INFO - Successfully stored 50 items in sentiment_data collection
+2025-03-01 21:19:00,730 - app.data.news_collector - INFO - Found 50 items stored in the last 5 minutes
+2025-03-01 21:19:00,732 - app.trading.sentiment_trader - INFO - Average BTC sentiment: 0.1000 (threshold: 0.2)
+2025-03-01 21:19:01,673 - app.trading.sentiment_trader - INFO - Current price: $85,936.63, 24h change: 1.008%
+2025-03-01 21:19:02,100 - app.trading.sentiment_trader - INFO - Price trending up: True (threshold: 0.5%)
+2025-03-01 21:19:03,030 - app.trading.sentiment_trader - INFO - Current BTC position: 1.0
+2025-03-01 21:19:03,031 - app.trading.sentiment_trader - INFO - Checking exit conditions (have BTC position)
+2025-03-01 21:19:03,032 - app.trading.sentiment_trader - INFO - No entry price found for current position
+2025-03-01 21:19:03,032 - app.trading.sentiment_trader - INFO - No exit conditions met
+2025-03-01 21:19:03,032 - app.trading.sentiment_trader - INFO - No trading conditions met
+2025-03-01 21:19:03,033 - main - INFO - Signal generated: {'signal': 'NEUTRAL', 'reason': 'No trading conditions met'}
+2025-03-01 21:19:03,787 - main - INFO - Waiting 300 seconds until next cycle...
+2025-03-01 21:24:03,788 - main - INFO - Starting trading cycle #3
+2025-03-01 21:24:03,789 - app.data.news_collector - INFO - Fetching 10 news items from CryptoCompare...
+2025-03-01 21:24:05,176 - app.data.news_collector - INFO - Received 50 news items from API
+2025-03-01 21:24:05,277 - app.data.news_collector - INFO - Processed 50 items with sentiment analysis
+2025-03-01 21:24:05,280 - app.data.news_collector - INFO - Successfully stored 50 items in sentiment_data collection
+2025-03-01 21:24:05,282 - app.data.news_collector - INFO - Found 50 items stored in the last 5 minutes
+2025-03-01 21:24:05,283 - app.trading.sentiment_trader - INFO - Average BTC sentiment: 0.0997 (threshold: 0.2)
+2025-03-01 21:24:07,249 - app.trading.sentiment_trader - INFO - Current price: $85,840.80, 24h change: 1.019%
+2025-03-01 21:24:07,677 - app.trading.sentiment_trader - INFO - Price trending up: True (threshold: 0.5%)
+2025-03-01 21:24:08,326 - app.trading.sentiment_trader - INFO - Current BTC position: 1.0
+2025-03-01 21:24:08,327 - app.trading.sentiment_trader - INFO - Checking exit conditions (have BTC position)
+2025-03-01 21:24:08,328 - app.trading.sentiment_trader - INFO - No entry price found for current position
+2025-03-01 21:24:08,328 - app.trading.sentiment_trader - INFO - No exit conditions met
+2025-03-01 21:24:08,329 - app.trading.sentiment_trader - INFO - No trading conditions met
+2025-03-01 21:24:08,330 - main - INFO - Signal generated: {'signal': 'NEUTRAL', 'reason': 'No trading conditions met'}
+2025-03-01 21:24:09,359 - main - INFO - Waiting 300 seconds until next cycle...

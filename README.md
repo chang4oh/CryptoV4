@@ -1,141 +1,78 @@
 # CryptoV4 Trading System
 
-A cryptocurrency trading system that combines real-time market data with sentiment analysis to generate trading signals.
+A sentiment-based cryptocurrency trading system that uses news sentiment analysis and market data to generate trading signals.
 
 ## Features
 
-- **Sentiment Analysis**
-  - Real-time news collection from CryptoCompare
-  - Sentiment analysis using TextBlob (extensible to VADER or LLM models)
-  - Support for major cryptocurrencies (BTC, ETH, BNB, XRP, ADA, SOL, DOT)
-  - Automated cryptocurrency symbol detection from news
+- **Sentiment Analysis**: Analyzes cryptocurrency news to determine market sentiment
+- **Market Data**: Collects and analyzes market data from Binance
+- **Trading Logic**: Combines sentiment and market data to generate trading signals
+- **Trade Execution**: Executes trades on Binance Testnet
+- **MongoDB Integration**: Stores all data and trading history in MongoDB
 
-- **Data Storage**
-  - MongoDB integration with schema validation
-  - Three main collections:
-    - `sentiment_data`: News and sentiment analysis
-    - `market_data`: Cryptocurrency price data
-    - `trading_history`: Trading records
-  - Efficient indexing for quick data retrieval
+## Requirements
 
-- **Trading System**
-  - Sentiment-based trading signals
-  - Risk management with position sizing
-  - Stop-loss implementation
-  - Binance Testnet integration
+- Python 3.8+
+- MongoDB 4.4+
+- Binance Testnet API credentials
 
 ## Installation
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/CryptoV4.git
-cd CryptoV4
-```
-
+1. Clone the repository
 2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-3. Set up environment variables in `.env`:
-```env
-# Binance API Keys (Testnet)
-BINANCE_API_KEY=your_api_key
-BINANCE_SECRET_KEY=your_secret_key
-
-# CryptoCompare API Key
-CRYPTOCOMPARE_API_KEY=your_api_key
-
-# MongoDB Configuration
-MONGODB_URI=mongodb://localhost:27017/
-```
-
-4. Install and start MongoDB:
-```bash
-# Windows (using winget)
-winget install MongoDB.Server
-net start MongoDB
-```
-
-## Project Structure
-
-```
-CryptoV4/
-├── app/
-│   ├── data/
-│   │   ├── news_collector.py   # News and sentiment collection
-│   │   └── market_data.py      # Price data collection
-│   ├── trading/
-│   │   ├── sentiment_trader.py # Trading logic
-│   │   └── risk_manager.py     # Risk management
-│   └── models/
-│       └── init_db.py          # Database initialization
-├── tests/
-│   └── test_trading_system.py  # System tests
-├── .env                        # Environment variables
-└── README.md                   # This file
-```
+   ```
+   pip install -r requirements.txt
+   ```
+3. Set up environment variables in `.env` file:
+   ```
+   BINANCE_API_KEY=your_api_key
+   BINANCE_SECRET_KEY=your_secret_key
+   MONGODB_URI=mongodb://localhost:27017/
+   CRYPTOCOMPARE_API_KEY=your_api_key (optional)
+   ```
+4. Make sure MongoDB is running
 
 ## Usage
 
-1. Initialize the database:
-```bash
-python app/models/init_db.py
+### Quick Start
+
+Run the trading system with default settings:
+```
+start_trading.bat
 ```
 
-2. Collect and analyze news:
-```bash
-python app/data/news_collector.py
+### Command Line Options
+
+Run the trading system with custom settings:
+```
+python main.py --interval 600 --test
 ```
 
-3. Start the trading system:
-```bash
-python app/trading/sentiment_trader.py
-```
+Options:
+- `--interval`: Time between trading cycles in seconds (default: 300)
+- `--test`: Run in test mode (generate signals but don't execute trades)
 
-## Sentiment Analysis
+### Configuration
 
-The `sentiment_trader.py` script leverages the `NewsCollector` class (from `/app/data/news_collector.py`) to perform sentiment analysis on cryptocurrency news. Currently, it uses the TextBlob model for basic sentiment analysis, providing polarity scores (-1 to 1) and subjectivity measures (0 to 1). The modular design allows for easy replacement with more sophisticated models like VADER (Valence Aware Dictionary and sEntiment Reasoner) or advanced LLM models for improved sentiment accuracy.
+Adjust trading parameters in `config.py`:
+- Trading pair
+- Position size
+- Stop loss percentage
+- Sentiment threshold
+- Price trend threshold
+- Trading interval
 
-## Database Schema
+## Components
 
-### Sentiment Data Collection
-- `symbol`: Cryptocurrency symbol (e.g., BTC, ETH)
-- `timestamp`: News publication time
-- `sentiment_score`: Sentiment analysis score (-1 to 1)
-- `source`: News source
-- `title`: News title
-- Additional fields: body, URL, categories, tags
+- **NewsCollector**: Collects and analyzes news sentiment
+- **MarketDataCollector**: Collects market data from Binance
+- **TradeExecutor**: Executes trades on Binance
+- **SentimentTrader**: Main trading logic
 
-### Market Data Collection
-- `symbol`: Cryptocurrency symbol
-- `timestamp`: Data timestamp
-- `price`: Current price
-- `volume`: Trading volume
-- Additional market metrics
+## Logs
 
-### Trading History Collection
-- `symbol`: Cryptocurrency symbol
-- `timestamp`: Trade timestamp
-- `type`: Order type (buy/sell)
-- `price`: Execution price
-- `size`: Position size
-- `status`: Order status
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+Trading logs are stored in `trading_log.txt`
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- CryptoCompare API for real-time news data
-- Binance Testnet for trading functionality
-- TextBlob for sentiment analysis 
+MIT 
