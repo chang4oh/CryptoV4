@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "cd app/frontend && npm run build",
-  "outputDirectory": "app/frontend/dist",
+  "buildCommand": "npm install && npm run build",
+  "outputDirectory": "dist",
   "headers": [
     {
       "source": "/(.*)",
