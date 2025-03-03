@@ -20,27 +20,39 @@ logger = logging.getLogger(__name__)
 class TradeExecutor:
     """Executes trades on Binance and records them in MongoDB."""
     
-    def __init__(self):
+    def __init__(self, test_mode=True):
         """Initialize Binance client and MongoDB connection."""
         # Initialize Binance client
         api_key = os.getenv('BINANCE_API_KEY')
         api_secret = os.getenv('BINANCE_SECRET_KEY')
+        self.test_mode = test_mode
         
-        if not api_key or not api_secret:
+        if (not api_key or not api_secret) and not self.test_mode:
             logger.error("Binance API credentials not found in environment variables")
-            raise ValueError("Binance API credentials not found")
+            raise ValueError("Binance API credentials not found in environment variables")
         
+        # Use dummy credentials for test mode if real ones aren't available
+        if (not api_key or not api_secret) and self.test_mode:
+            api_key = "dummy_api_key"
+            api_secret = "dummy_api_secret"
+            logger.warning("Using dummy Binance API credentials in test mode")
+        
+        # Initialize Binance client with testnet
         self.client = Client(api_key, api_secret, testnet=True)
         
-        # Initialize MongoDB connection
+        # Connect to MongoDB
         mongo_uri = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
         self.mongo_client = MongoClient(mongo_uri)
-        self.db = self.mongo_client.CryptoV4
+        self.db = self.mongo_client['CryptoV4']
+        
+        # Create trading_history collection if it doesn't exist
+        if 'trading_history' not in self.db.list_collection_names():
+            self.db.create_collection('trading_history')
         
         # Ensure index on trading_history collection
         self.db.trading_history.create_index([('timestamp', DESCENDING)])
         
-        logger.info("TradeExecutor initialized with Binance Testnet")
+        logger.info(f"Trade executor initialized (test_mode: {self.test_mode})")
     
     def get_account_balance(self, asset: str = 'USDT') -> float:
         """

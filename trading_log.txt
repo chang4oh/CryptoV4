@@ -338,3 +338,59 @@
 2025-03-02 01:02:34,283 - app.trading.sentiment_trader - INFO - No trading conditions met
 2025-03-02 01:02:34,284 - main - INFO - Signal generated: {'signal': 'NEUTRAL', 'reason': 'No trading conditions met'}
 2025-03-02 01:02:35,327 - main - INFO - Waiting 300 seconds until next cycle...
+2025-03-02 20:46:36,324 - main - ERROR - Critical error in trading system: No module named 'app.data'
+2025-03-02 20:54:18,504 - main - INFO - Starting trading system (interval: 300s, test_mode: False)
+2025-03-02 20:54:18,516 - app.data.news_collector - INFO - NewsCollector initialized successfully
+2025-03-02 20:54:18,517 - main - ERROR - Critical error in trading system: BinanceClient.__init__() got an unexpected keyword argument 'use_testnet'
+2025-03-02 20:54:54,806 - main - INFO - Starting trading system (interval: 300s, test_mode: False)
+2025-03-02 20:54:54,819 - app.data.news_collector - INFO - NewsCollector initialized successfully
+2025-03-02 20:54:54,819 - main - ERROR - Critical error in trading system: Binance API credentials not found in environment variables
+2025-03-02 20:56:01,820 - main - INFO - Starting trading system (interval: 300s, test_mode: False)
+2025-03-02 20:56:01,834 - app.data.news_collector - INFO - NewsCollector initialized successfully
+2025-03-02 20:56:01,835 - app.trading.binance_client - WARNING - Using dummy Binance API credentials in test mode
+2025-03-02 20:56:02,359 - app.trading.binance_client - INFO - Binance Testnet client initialized successfully
+2025-03-02 20:56:02,393 - app.data.market_data - INFO - MarketDataCollector initialized with Binance Testnet
+2025-03-02 20:56:02,393 - app.trading.trade_executor - WARNING - Using dummy Binance API credentials in test mode
+2025-03-02 20:56:02,878 - app.trading.trade_executor - INFO - Trade executor initialized (test_mode: True)
+2025-03-02 20:56:02,878 - app.trading.sentiment_trader - INFO - Sentiment trader initialized (test_mode: True)
+2025-03-02 20:56:02,878 - main - INFO - Trading BTCUSDT with 20 USDT position size
+2025-03-02 20:56:02,878 - main - INFO - Stop loss: 2.0%, Sentiment threshold: 0.2
+2025-03-02 20:56:03,311 - app.trading.trade_executor - ERROR - Binance API error getting balance: APIError(code=-2014): API-key format invalid.
+2025-03-02 20:56:03,743 - app.trading.trade_executor - ERROR - Binance API error getting balance: APIError(code=-2014): API-key format invalid.
+2025-03-02 20:56:03,910 - app.trading.binance_client - INFO - Retrieved price for BTCUSDT
+2025-03-02 20:56:03,917 - app.data.market_data - ERROR - Error getting market data for BTCUSDT: Document failed validation, full error: {'index': 0, 'code': 121, 'errmsg': 'Document failed validation', 'errInfo': {'failingDocumentId': ObjectId('67c51a4356abfb4b8bf37553'), 'details': {'operatorName': '$jsonSchema', 'schemaRulesNotSatisfied': [{'operatorName': 'required', 'specifiedAs': {'required': ['symbol', 'timestamp', 'open', 'high', 'low', 'close', 'volume']}, 'missingProperties': ['close', 'high', 'low', 'open', 'volume']}]}}}
+2025-03-02 20:56:03,921 - main - INFO - Starting trading cycle #1
+2025-03-02 20:56:03,921 - app.trading.sentiment_trader - ERROR - Error generating trading signal: 'NewsCollector' object has no attribute 'fetch_and_analyze_news'
+2025-03-02 20:56:03,922 - main - INFO - Signal generated: {'signal': 'ERROR', 'reason': "'NewsCollector' object has no attribute 'fetch_and_analyze_news'"}
+2025-03-02 20:56:04,083 - app.trading.trade_executor - ERROR - Binance API error getting balance: APIError(code=-2014): API-key format invalid.
+2025-03-02 20:56:04,514 - app.trading.trade_executor - ERROR - Binance API error getting balance: APIError(code=-2014): API-key format invalid.
+2025-03-02 20:56:04,673 - app.trading.binance_client - INFO - Retrieved price for BTCUSDT
+2025-03-02 20:56:04,674 - app.data.market_data - ERROR - Error getting market data for BTCUSDT: Document failed validation, full error: {'index': 0, 'code': 121, 'errmsg': 'Document failed validation', 'errInfo': {'failingDocumentId': ObjectId('67c51a4456abfb4b8bf37554'), 'details': {'operatorName': '$jsonSchema', 'schemaRulesNotSatisfied': [{'operatorName': 'required', 'specifiedAs': {'required': ['symbol', 'timestamp', 'open', 'high', 'low', 'close', 'volume']}, 'missingProperties': ['close', 'high', 'low', 'open', 'volume']}]}}}
+2025-03-02 20:56:04,677 - main - INFO - Waiting 300 seconds until next cycle...
+2025-03-02 20:56:23,209 - main - INFO - Trading system stopped by user
+2025-03-02 20:56:44,678 - main - INFO - Starting trading system (interval: 300s, test_mode: False)
+2025-03-02 20:56:44,710 - app.data.news_collector - INFO - NewsCollector initialized successfully
+2025-03-02 20:56:44,711 - app.trading.binance_client - WARNING - Using dummy Binance API credentials in test mode
+2025-03-02 20:56:44,917 - app.trading.binance_client - INFO - Binance Testnet client initialized successfully
+2025-03-02 20:56:44,944 - app.data.market_data - INFO - MarketDataCollector initialized with Binance Testnet
+2025-03-02 20:56:44,944 - app.trading.trade_executor - WARNING - Using dummy Binance API credentials in test mode
+2025-03-02 20:56:45,416 - app.trading.trade_executor - INFO - Trade executor initialized (test_mode: True)
+2025-03-02 20:56:45,416 - app.trading.sentiment_trader - INFO - Sentiment trader initialized (test_mode: True)
+2025-03-02 20:56:45,417 - main - INFO - Trading BTCUSDT with 20 USDT position size
+2025-03-02 20:56:45,417 - main - INFO - Stop loss: 2.0%, Sentiment threshold: 0.2
+2025-03-02 20:56:45,853 - app.trading.trade_executor - ERROR - Binance API error getting balance: APIError(code=-2014): API-key format invalid.
+2025-03-02 20:56:46,288 - app.trading.trade_executor - ERROR - Binance API error getting balance: APIError(code=-2014): API-key format invalid.
+2025-03-02 20:56:46,454 - app.trading.binance_client - INFO - Retrieved price for BTCUSDT
+2025-03-02 20:56:46,456 - app.data.market_data - ERROR - Error getting market data for BTCUSDT: Document failed validation, full error: {'index': 0, 'code': 121, 'errmsg': 'Document failed validation', 'errInfo': {'failingDocumentId': ObjectId('67c51a6ea8e71eac182ae936'), 'details': {'operatorName': '$jsonSchema', 'schemaRulesNotSatisfied': [{'operatorName': 'required', 'specifiedAs': {'required': ['symbol', 'timestamp', 'open', 'high', 'low', 'close', 'volume']}, 'missingProperties': ['close', 'high', 'low', 'open', 'volume']}]}}}
+2025-03-02 20:56:46,460 - main - INFO - Starting trading cycle #1
+2025-03-02 20:56:46,462 - app.data.news_collector - ERROR - Error storing sentiment data: batch op errors occurred, full error: {'writeErrors': [{'index': 0, 'code': 121, 'errmsg': 'Document failed validation', 'errInfo': {'failingDocumentId': ObjectId('67c51a6ea8e71eac182ae941'), 'details': {'operatorName': '$jsonSchema', 'schemaRulesNotSatisfied': [{'operatorName': 'required', 'specifiedAs': {'required': ['symbol', 'timestamp', 'sentiment_score', 'source', 'title']}, 'missingProperties': ['source', 'title']}]}}, 'op': {'news_id': ObjectId('67c51a6ea8e71eac182ae937'), 'symbol': 'BTC', 'sentiment_score': 0.10650207337977857, 'timestamp': datetime.datetime(2025, 3, 2, 20, 56, 46, 461977), '_id': ObjectId('67c51a6ea8e71eac182ae941')}}], 'writeConcernErrors': [], 'nInserted': 0, 'nUpserted': 0, 'nMatched': 0, 'nModified': 0, 'nRemoved': 0, 'upserted': []}
+2025-03-02 20:56:46,464 - app.trading.sentiment_trader - INFO - Average BTC sentiment: -0.3219 (threshold: 0.2)
+2025-03-02 20:56:46,625 - app.trading.binance_client - INFO - Retrieved price for BTCUSDT
+2025-03-02 20:56:46,627 - app.data.market_data - ERROR - Error getting market data for BTCUSDT: Document failed validation, full error: {'index': 0, 'code': 121, 'errmsg': 'Document failed validation', 'errInfo': {'failingDocumentId': ObjectId('67c51a6ea8e71eac182ae94b'), 'details': {'operatorName': '$jsonSchema', 'schemaRulesNotSatisfied': [{'operatorName': 'required', 'specifiedAs': {'required': ['symbol', 'timestamp', 'open', 'high', 'low', 'close', 'volume']}, 'missingProperties': ['close', 'high', 'low', 'open', 'volume']}]}}}
+2025-03-02 20:56:46,628 - app.trading.sentiment_trader - INFO - No market data available
+2025-03-02 20:56:46,628 - main - INFO - Signal generated: {'signal': 'NEUTRAL', 'reason': 'No market data available'}
+2025-03-02 20:56:47,057 - app.trading.trade_executor - ERROR - Binance API error getting balance: APIError(code=-2014): API-key format invalid.
+2025-03-02 20:56:47,485 - app.trading.trade_executor - ERROR - Binance API error getting balance: APIError(code=-2014): API-key format invalid.
+2025-03-02 20:56:47,915 - app.trading.binance_client - INFO - Retrieved price for BTCUSDT
+2025-03-02 20:56:47,916 - app.data.market_data - ERROR - Error getting market data for BTCUSDT: Document failed validation, full error: {'index': 0, 'code': 121, 'errmsg': 'Document failed validation', 'errInfo': {'failingDocumentId': ObjectId('67c51a6fa8e71eac182ae94c'), 'details': {'operatorName': '$jsonSchema', 'schemaRulesNotSatisfied': [{'operatorName': 'required', 'specifiedAs': {'required': ['symbol', 'timestamp', 'open', 'high', 'low', 'close', 'volume']}, 'missingProperties': ['close', 'high', 'low', 'open', 'volume']}]}}}
+2025-03-02 20:56:47,918 - main - INFO - Waiting 300 seconds until next cycle...

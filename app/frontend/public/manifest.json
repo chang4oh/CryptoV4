@@ -1,23 +1,21 @@
 {
   "name": "CryptoV4 Trading Dashboard",
   "short_name": "CryptoV4",
-  "description": "Sentiment-based cryptocurrency trading dashboard",
+  "description": "Cryptocurrency trading dashboard with sentiment analysis",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8f9fa",
-  "theme_color": "#212529",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 } 

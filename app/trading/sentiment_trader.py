@@ -25,12 +25,13 @@ logger = logging.getLogger(__name__)
 class SentimentTrader:
     """Trading system based on sentiment analysis."""
     
-    def __init__(self, config=None):
+    def __init__(self, config=None, test_mode=True):
         """Initialize components."""
         self.config = config or TRADING_CONFIG
+        self.test_mode = test_mode
         self.news_collector = NewsCollector()
         self.market_collector = MarketDataCollector()
-        self.trade_executor = TradeExecutor()
+        self.trade_executor = TradeExecutor(test_mode=self.test_mode)
         
         # Trading parameters from config
         self.symbol = self.config['symbol']
@@ -39,13 +40,16 @@ class SentimentTrader:
         self.sentiment_threshold = self.config['sentiment_threshold']
         self.price_trend_threshold = self.config['price_trend_threshold']
         
-        logger.info("Sentiment trader initialized")
+        logger.info(f"Sentiment trader initialized (test_mode: {self.test_mode})")
     
     def get_trading_signal(self) -> Dict:
         """Generate trading signal based on sentiment and market data."""
         try:
             # Get latest sentiment
-            sentiment_data = self.news_collector.fetch_and_analyze_news(limit=10)
+            symbol = 'BTC'
+            news_items = self.news_collector.collect_news(symbol=symbol, limit=10)
+            sentiment_data = self.news_collector.analyze_sentiment(news_items)
+            
             if not sentiment_data:
                 logger.info("No sentiment data available")
                 return {'signal': 'NEUTRAL', 'reason': 'No sentiment data available'}
@@ -53,7 +57,7 @@ class SentimentTrader:
             # Calculate average sentiment
             btc_sentiment = [
                 item['sentiment_score'] for item in sentiment_data 
-                if item['symbol'] == 'BTC'
+                if item['symbol'] == symbol
             ]
             if not btc_sentiment:
                 logger.info("No BTC sentiment data found")

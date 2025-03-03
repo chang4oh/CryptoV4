@@ -187,13 +187,20 @@ class BinanceDataCollector:
             return {}
 
 class BinanceClient:
-    def __init__(self):
+    def __init__(self, test_mode=True):
         """Initialize Binance API client with testnet credentials."""
         self.api_key = os.getenv('BINANCE_API_KEY')
         self.api_secret = os.getenv('BINANCE_SECRET_KEY')
+        self.test_mode = test_mode
         
-        if not self.api_key or not self.api_secret:
+        if (not self.api_key or not self.api_secret) and not self.test_mode:
             raise ValueError("Binance API credentials not found in environment variables")
+        
+        # Use dummy credentials for test mode if real ones aren't available
+        if (not self.api_key or not self.api_secret) and self.test_mode:
+            self.api_key = "dummy_api_key"
+            self.api_secret = "dummy_api_secret"
+            logger.warning("Using dummy Binance API credentials in test mode")
         
         # Initialize Binance client with testnet
         self.client = Client(self.api_key, self.api_secret, testnet=True)
