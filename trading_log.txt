@@ -2318,3 +2318,63 @@ ValueError: invalid literal for int() with base 10: '60  # seconds'
 2025-03-04 01:31:24,982 - main - INFO - Signal generated: {'symbol': 'BTCUSDT', 'timestamp': datetime.datetime(2025, 3, 4, 1, 31, 24, 48472), 'action': 'HOLD', 'confidence': 0.0, 'price': 83577.81, 'reason': ['No sentiment data available', 'Price trending up: False', 'Current BTC position: 0.5', 'No trading conditions met']}
 2025-03-04 01:31:25,149 - app.data.market_data - INFO - Successfully retrieved ticker data using methods: get_ticker
 2025-03-04 01:31:25,156 - main - INFO - Waiting 300 seconds until next cycle...
+2025-03-04 01:36:25,157 - main - INFO - Starting trading cycle #10
+2025-03-04 01:36:25,157 - app.trading.sentiment_trader - INFO - Generating trading signal for BTCUSDT
+2025-03-04 01:36:25,681 - app.data.market_data - INFO - Successfully retrieved ticker data using methods: get_ticker
+2025-03-04 01:36:25,682 - app.trading.sentiment_trader - INFO - Current price: 83706.63
+2025-03-04 01:36:25,684 - app.trading.sentiment_trader - WARNING - No sentiment data available
+2025-03-04 01:36:26,116 - app.data.market_data - INFO - Price trend for BTCUSDT over 24h: -9.41% change, trending up: False
+2025-03-04 01:36:26,117 - app.trading.sentiment_trader - INFO - Price trending up: False
+2025-03-04 01:36:26,119 - app.trading.sentiment_trader - INFO - Current BTC position: 0.5
+2025-03-04 01:36:26,119 - app.trading.sentiment_trader - INFO - Checking exit conditions (have BTC position)
+2025-03-04 01:36:26,120 - app.trading.sentiment_trader - INFO - No entry price found for current position
+2025-03-04 01:36:26,120 - app.trading.sentiment_trader - INFO - No exit conditions met
+2025-03-04 01:36:26,120 - app.trading.sentiment_trader - INFO - No trading conditions met
+2025-03-04 01:36:26,121 - main - INFO - Signal generated: {'symbol': 'BTCUSDT', 'timestamp': datetime.datetime(2025, 3, 4, 1, 36, 25, 158262), 'action': 'HOLD', 'confidence': 0.0, 'price': 83706.63, 'reason': ['No sentiment data available', 'Price trending up: False', 'Current BTC position: 0.5', 'No trading conditions met']}
+2025-03-04 01:36:26,555 - app.data.market_data - INFO - Successfully retrieved ticker data using methods: get_ticker
+2025-03-04 01:36:26,562 - main - INFO - Waiting 300 seconds until next cycle...
+2025-03-04 01:41:26,563 - main - INFO - Starting trading cycle #11
+2025-03-04 01:41:26,563 - app.trading.sentiment_trader - INFO - Generating trading signal for BTCUSDT
+2025-03-04 01:41:27,090 - app.data.market_data - INFO - Successfully retrieved ticker data using methods: get_ticker
+2025-03-04 01:41:27,090 - app.trading.sentiment_trader - INFO - Current price: 83577.74
+2025-03-04 01:41:27,092 - app.trading.sentiment_trader - WARNING - No sentiment data available
+2025-03-04 01:41:27,521 - app.data.market_data - INFO - Price trend for BTCUSDT over 24h: -9.54% change, trending up: False
+2025-03-04 01:41:27,522 - app.trading.sentiment_trader - INFO - Price trending up: False
+2025-03-04 01:41:27,523 - app.trading.sentiment_trader - INFO - Current BTC position: 0.5
+2025-03-04 01:41:27,524 - app.trading.sentiment_trader - INFO - Checking exit conditions (have BTC position)
+2025-03-04 01:41:27,525 - app.trading.sentiment_trader - INFO - No entry price found for current position
+2025-03-04 01:41:27,525 - app.trading.sentiment_trader - INFO - No exit conditions met
+2025-03-04 01:41:27,526 - app.trading.sentiment_trader - INFO - No trading conditions met
+2025-03-04 01:41:27,526 - main - INFO - Signal generated: {'symbol': 'BTCUSDT', 'timestamp': datetime.datetime(2025, 3, 4, 1, 41, 26, 563642), 'action': 'HOLD', 'confidence': 0.0, 'price': 83577.74, 'reason': ['No sentiment data available', 'Price trending up: False', 'Current BTC position: 0.5', 'No trading conditions met']}
+2025-03-04 01:41:27,963 - app.data.market_data - INFO - Successfully retrieved ticker data using methods: get_ticker
+2025-03-04 01:41:27,971 - main - INFO - Waiting 300 seconds until next cycle...
+2025-03-04 01:46:27,971 - main - INFO - Starting trading cycle #12
+2025-03-04 01:46:27,972 - app.trading.sentiment_trader - INFO - Generating trading signal for BTCUSDT
+2025-03-04 01:46:28,456 - app.data.market_data - INFO - Successfully retrieved ticker data using methods: get_ticker
+2025-03-04 01:46:28,456 - app.trading.sentiment_trader - INFO - Current price: 83484.04
+2025-03-04 01:46:28,458 - app.trading.sentiment_trader - WARNING - No sentiment data available
+2025-03-04 01:46:29,049 - app.data.market_data - INFO - Price trend for BTCUSDT over 24h: -9.64% change, trending up: False
+2025-03-04 01:46:29,050 - app.trading.sentiment_trader - INFO - Price trending up: False
+2025-03-04 01:46:29,051 - app.trading.sentiment_trader - INFO - Current BTC position: 0.5
+2025-03-04 01:46:29,052 - app.trading.sentiment_trader - INFO - Checking exit conditions (have BTC position)
+2025-03-04 01:46:29,053 - app.trading.sentiment_trader - INFO - No entry price found for current position
+2025-03-04 01:46:29,054 - app.trading.sentiment_trader - INFO - No exit conditions met
+2025-03-04 01:46:29,054 - app.trading.sentiment_trader - INFO - No trading conditions met
+2025-03-04 01:46:29,055 - main - INFO - Signal generated: {'symbol': 'BTCUSDT', 'timestamp': datetime.datetime(2025, 3, 4, 1, 46, 27, 972910), 'action': 'HOLD', 'confidence': 0.0, 'price': 83484.04, 'reason': ['No sentiment data available', 'Price trending up: False', 'Current BTC position: 0.5', 'No trading conditions met']}
+2025-03-04 01:46:29,490 - app.data.market_data - INFO - Successfully retrieved ticker data using methods: get_ticker
+2025-03-04 01:46:29,498 - main - INFO - Waiting 300 seconds until next cycle...
+2025-03-04 01:51:29,499 - main - INFO - Starting trading cycle #13
+2025-03-04 01:51:29,499 - app.trading.sentiment_trader - INFO - Generating trading signal for BTCUSDT
+2025-03-04 01:51:30,001 - app.data.market_data - INFO - Successfully retrieved ticker data using methods: get_ticker
+2025-03-04 01:51:30,002 - app.trading.sentiment_trader - INFO - Current price: 83518.09
+2025-03-04 01:51:30,003 - app.trading.sentiment_trader - WARNING - No sentiment data available
+2025-03-04 01:51:30,437 - app.data.market_data - INFO - Price trend for BTCUSDT over 24h: -9.63% change, trending up: False
+2025-03-04 01:51:30,437 - app.trading.sentiment_trader - INFO - Price trending up: False
+2025-03-04 01:51:30,439 - app.trading.sentiment_trader - INFO - Current BTC position: 0.5
+2025-03-04 01:51:30,439 - app.trading.sentiment_trader - INFO - Checking exit conditions (have BTC position)
+2025-03-04 01:51:30,440 - app.trading.sentiment_trader - INFO - No entry price found for current position
+2025-03-04 01:51:30,441 - app.trading.sentiment_trader - INFO - No exit conditions met
+2025-03-04 01:51:30,441 - app.trading.sentiment_trader - INFO - No trading conditions met
+2025-03-04 01:51:30,441 - main - INFO - Signal generated: {'symbol': 'BTCUSDT', 'timestamp': datetime.datetime(2025, 3, 4, 1, 51, 29, 500321), 'action': 'HOLD', 'confidence': 0.0, 'price': 83518.09, 'reason': ['No sentiment data available', 'Price trending up: False', 'Current BTC position: 0.5', 'No trading conditions met']}
+2025-03-04 01:51:30,878 - app.data.market_data - INFO - Successfully retrieved ticker data using methods: get_ticker
+2025-03-04 01:51:30,884 - main - INFO - Waiting 300 seconds until next cycle...
