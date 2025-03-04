@@ -7,8 +7,8 @@ import cssnano from 'cssnano'
 import path from 'path'
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command, mode }) => {
-  // Load env variables from .env files
+export default defineConfig(({ mode }) => {
+  // Load env file based on mode
   const env = loadEnv(mode, process.cwd(), '')
   
   return {
@@ -92,6 +92,7 @@ export default defineConfig(({ command, mode }) => {
       sourcemap: mode !== 'production',
       // Minify options
       minify: mode === 'production',
+      cssMinify: mode === 'production',
       terserOptions: {
         compress: {
           drop_console: mode === 'production',
@@ -104,8 +105,10 @@ export default defineConfig(({ command, mode }) => {
       rollupOptions: {
         output: {
           manualChunks: {
-            vendor: ['react', 'react-router-dom', 'react-bootstrap', 'react-icons'],
-            charts: ['recharts', 'chart.js'],
+            react: ['react', 'react-dom'],
+            router: ['react-router-dom'],
+            bootstrap: ['react-bootstrap', 'bootstrap'],
+            charts: ['recharts', 'apexcharts', 'react-apexcharts']
           },
         },
       },
