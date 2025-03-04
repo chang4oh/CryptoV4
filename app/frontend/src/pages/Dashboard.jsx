@@ -53,28 +53,28 @@ const BotStatusCard = ({ status }) => {
 const PerformanceCard = ({ performance }) => {
   const isPositive = performance.daily_change >= 0;
   
-        return (
+  return (
     <Card className="mb-4 shadow-sm">
       <Card.Header>
         <h5 className="mb-0">Performance</h5>
       </Card.Header>
       <Card.Body>
-            <Row>
+        <Row>
           <Col xs={6} className="text-center border-end">
             <h6 className="text-muted">Today</h6>
             <h4 className={isPositive ? 'text-success' : 'text-danger'}>
               {isPositive ? '+' : ''}{performance.daily_change.toFixed(2)}%
               {isPositive ? <BsArrowUp className="ms-1" /> : <BsArrowDown className="ms-1" />}
             </h4>
-              </Col>
+          </Col>
           <Col xs={6} className="text-center">
             <h6 className="text-muted">This Month</h6>
             <h4 className={performance.monthly_change >= 0 ? 'text-success' : 'text-danger'}>
               {performance.monthly_change >= 0 ? '+' : ''}{performance.monthly_change.toFixed(2)}%
               {performance.monthly_change >= 0 ? <BsArrowUp className="ms-1" /> : <BsArrowDown className="ms-1" />}
             </h4>
-              </Col>
-            </Row>
+          </Col>
+        </Row>
         <hr />
         <div className="d-grid">
           <Button 
@@ -107,7 +107,7 @@ const AssetSummaryCard = ({ assets }) => {
             <div className="text-end">
               <div>{asset.amount.toFixed(6)} {asset.symbol}</div>
               <small className="text-muted">${asset.value.toFixed(2)} USD</small>
-          </div>
+            </div>
           </ListGroup.Item>
         ))}
       </ListGroup>
@@ -126,7 +126,7 @@ const AssetSummaryCard = ({ assets }) => {
 };
 
 const RecentTradesCard = ({ trades }) => {
-        return (
+  return (
     <Card className="shadow-sm">
       <Card.Header>
         <h5 className="mb-0">Recent Trades</h5>
@@ -239,14 +239,14 @@ const Dashboard = () => {
   }
 
   return (
-        <Container>
+    <Container>
       <h1 className="mb-4">Dashboard</h1>
       
       {loading ? (
         <div className="text-center py-5">
           <div className="loading-spinner mb-3"></div>
           <p>Loading dashboard data...</p>
-          </div>
+        </div>
       ) : (
         <Row>
           <Col lg={4} md={6}>
@@ -261,7 +261,7 @@ const Dashboard = () => {
           </Col>
         </Row>
       )}
-      </Container>
+    </Container>
   );
 };
 
