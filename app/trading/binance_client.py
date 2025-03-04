@@ -25,7 +25,8 @@ class BinanceDataCollector:
         
         # Initialize client with Testnet
         self.client = Client(self.api_key, self.api_secret, testnet=True)
-        self.client.API_URL = 'https://testnet.binance.vision/api'  # Use testnet URL
+        self.client.API_URL = 'https://testnet.binance.vision/api'  # Use testnet URL as per documentation
+        logger.info(f"Initialized Binance client with Testnet URL: {self.client.API_URL}")
         
     def get_historical_klines(
         self,
@@ -190,7 +191,7 @@ class BinanceClient:
     def __init__(self, test_mode=True):
         """Initialize Binance API client with testnet credentials."""
         self.api_key = os.getenv('BINANCE_API_KEY')
-        self.api_secret = os.getenv('BINANCE_SECRET_KEY')
+        self.api_secret = os.getenv('BINANCE_API_SECRET')
         self.test_mode = test_mode
         
         if (not self.api_key or not self.api_secret) and not self.test_mode:
@@ -205,6 +206,13 @@ class BinanceClient:
         # Initialize Binance client with testnet
         self.client = Client(self.api_key, self.api_secret, testnet=True)
         logger.info("Binance Testnet client initialized successfully")
+        
+        # Verify connection by trying to get server time
+        try:
+            server_time = self.client.get_server_time()
+            logger.info(f"Connected to Binance server. Server time: {datetime.fromtimestamp(server_time['serverTime']/1000)}")
+        except Exception as e:
+            logger.warning(f"Unable to verify Binance connection: {str(e)}")
 
     def get_account_info(self) -> Dict:
         """Get account information."""

@@ -9,7 +9,7 @@ def test_binance_connection():
     try:
         # Initialize Binance client
         api_key = os.getenv('BINANCE_API_KEY')
-        api_secret = os.getenv('BINANCE_SECRET_KEY')
+        api_secret = os.getenv('BINANCE_API_SECRET')
         
         print("Connecting to Binance...")
         client = Client(api_key, api_secret, testnet=True)

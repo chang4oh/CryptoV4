@@ -1,179 +1,226 @@
-import React, { useState, useEffect, Suspense } from 'react'
-import { Container, Row, Col, Spinner, Nav, Button } from 'react-bootstrap'
-import './App.css'
+import React, { useState, useEffect, Suspense } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Container, Row, Col, Button, Alert } from "react-bootstrap";
+import {
+  FaChartLine,
+  FaWallet,
+  FaCog,
+  FaBars,
+  FaTimes,
+  FaPowerOff,
+  FaPlayCircle,
+  FaStopCircle,
+} from "react-icons/fa";
+
+// Components
+import Dashboard from "./pages/Dashboard";
+import Market from "./pages/Market";
+import Wallet from "./pages/Wallet";
+import Settings from "./pages/Settings";
+import Notifications from "./components/Notifications";
+import Header from "./components/Header";
+import Sidebar from "./components/Sidebar";
+
+// Hooks and Services
+import { useTheme } from "./hooks/useTheme";
+import apiService from "./services/api";
+
+// Loading Spinner Component
+const LoadingSpinner = () => (
+  <div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
+    <div className="spinner-border text-primary" role="status">
+      <span className="visually-hidden">Loading...</span>
+    </div>
+  </div>
+);
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
+    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true };
+    return { hasError: true, error };
   }
 
   componentDidCatch(error, errorInfo) {
-    this.setState({
-      error: error,
-      errorInfo: errorInfo
-    });
-    console.error("Error caught by ErrorBoundary:", error, errorInfo);
+    console.log("Component Error:", error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <div className="error-boundary p-4 text-center">
-          <h3>Something went wrong</h3>
-          <p>We're sorry, but there was an error loading this part of the application.</p>
-          <Button onClick={() => window.location.reload()}>Refresh Page</Button>
-          {this.state.error && (
-            <details className="mt-3 text-start">
-              <summary>Error details (for developers)</summary>
-              <pre className="error-stack mt-2 p-3">
-                {this.state.error.toString()}
-                {this.state.errorInfo && this.state.errorInfo.componentStack}
-              </pre>
-            </details>
-          )}
-        </div>
+        <Container className="mt-5 text-center">
+          <Alert variant="danger">
+            <h4>Something went wrong!</h4>
+            <p>
+              {this.state.error && this.state.error.toString()}
+            </p>
+            <Button 
+              variant="outline-secondary" 
+              onClick={() => {
+                this.setState({ hasError: false });
+                window.location.href = "/";
+              }}
+            >
+              Return to Dashboard
+            </Button>
+          </Alert>
+        </Container>
       );
     }
+
     return this.props.children;
   }
 }
 
-// Lazy-loaded components
-const Dashboard = React.lazy(() => import('./components/Dashboard'));
-const NewsFeed = React.lazy(() => import('./components/NewsFeed'));
-const RecentTrades = React.lazy(() => import('./components/RecentTrades'));
-const CryptoSearch = React.lazy(() => import('./components/CryptoSearch'));
-const Settings = React.lazy(() => import('./components/Settings'));
+const App = () => {
+  const { theme } = useTheme();
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
+  const [notifications, setNotifications] = useState([]);
+  const [botStatus, setBotStatus] = useState({ running: false, status: "offline" });
+  const [connectionError, setConnectionError] = useState(false);
 
-function App() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
   useEffect(() => {
-    // Simulate initialization process
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-    
-    // Check saved dark mode preference
-    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-    setDarkMode(savedDarkMode);
-    
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
     return () => {
-      clearTimeout(timer);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    localStorage.setItem('darkMode', newDarkMode.toString());
+  // Add notification function
+  const addNotification = (message, type = "info") => {
+    const id = Date.now();
+    setNotifications([
+      ...notifications,
+      { id, message, type, timestamp: new Date() },
+    ]);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      setNotifications((current) =>
+        current.filter((notification) => notification.id !== id)
+      );
+    }, 5000);
   };
 
-  // Render active component based on tab
-  const renderActiveComponent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return <Dashboard />;
-      case 'news':
-        return <NewsFeed />;
-      case 'trades':
-        return <RecentTrades />;
-      case 'crypto':
-        return <CryptoSearch />;
-      case 'settings':
-        return <Settings toggleDarkMode={toggleDarkMode} isDarkMode={darkMode} />;
-      default:
-        return <Dashboard />;
+  // Check bot status periodically
+  useEffect(() => {
+    const checkBotStatus = async () => {
+      try {
+        const response = await apiService.getBotStatus();
+        setBotStatus(response.data);
+        setConnectionError(false);
+      } catch (error) {
+        console.log("Failed to fetch bot status:", error);
+        setConnectionError(true);
+        // If there was a previous error, don't spam notifications
+        if (!connectionError) {
+          addNotification("Cannot connect to trading bot server", "danger");
+        }
+      }
+    };
+
+    checkBotStatus(); // Check immediately
+    
+    const interval = setInterval(checkBotStatus, 30000); // Then check every 30 seconds
+    
+    return () => {
+      clearInterval(interval);
+    };
+  }, [connectionError]);
+
+  // Toggle bot function
+  const toggleBot = async () => {
+    try {
+      if (botStatus.running) {
+        await apiService.stopBot();
+        addNotification("Trading bot stopped", "warning");
+      } else {
+        await apiService.startBot();
+        addNotification("Trading bot started", "success");
+      }
+      
+      // Update status after action
+      const response = await apiService.getBotStatus();
+      setBotStatus(response.data);
+    } catch (error) {
+      addNotification(`Failed to ${botStatus.running ? "stop" : "start"} trading bot`, "danger");
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className={`d-flex justify-content-center align-items-center vh-100 ${darkMode ? 'dark-mode' : ''}`}>
-        <Spinner animation="border" role="status" variant={darkMode ? 'light' : 'primary'}>
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
-      </div>
-    );
-  }
-  
   return (
-    <div className={darkMode ? 'dark-mode' : ''}>
-      <Container fluid className="app-container">
-        <Row>
-          <Col md={2} className="sidebar">
-            <div className="py-4 px-3">
-              <h3 className="text-center mb-4">CryptoV4</h3>
-              <Nav className="flex-column">
-                <Nav.Link 
-                  className={activeTab === 'dashboard' ? 'active' : ''} 
-                  onClick={() => setActiveTab('dashboard')}
-                >
-                  Dashboard
-                </Nav.Link>
-                <Nav.Link 
-                  className={activeTab === 'crypto' ? 'active' : ''} 
-                  onClick={() => setActiveTab('crypto')}
-                >
-                  Crypto Trading
-                </Nav.Link>
-                <Nav.Link 
-                  className={activeTab === 'news' ? 'active' : ''} 
-                  onClick={() => setActiveTab('news')}
-                >
-                  News Feed
-                </Nav.Link>
-                <Nav.Link 
-                  className={activeTab === 'trades' ? 'active' : ''} 
-                  onClick={() => setActiveTab('trades')}
-                >
-                  Recent Trades
-                </Nav.Link>
-                <Nav.Link 
-                  className={activeTab === 'settings' ? 'active' : ''} 
-                  onClick={() => setActiveTab('settings')}
-                >
-                  Settings
-                </Nav.Link>
-              </Nav>
-              <div className="mt-auto dark-mode-toggle">
-                <Button 
-                  variant={darkMode ? 'light' : 'dark'} 
-                  size="sm" 
-                  onClick={toggleDarkMode}
-                  className="w-100 mt-4"
-                >
-                  {darkMode ? 'Light Mode' : 'Dark Mode'}
-                </Button>
+    <BrowserRouter>
+      <div className={`app ${theme}`}>
+        <div className="app-container">
+          <ErrorBoundary>
+            <Header toggleSidebar={toggleSidebar} notifications={notifications} />
+            <div className="main-content">
+              <Sidebar isOpen={sidebarOpen} />
+              <div className={`content-area ${sidebarOpen ? "sidebar-open" : ""}`}>
+                {connectionError && (
+                  <Alert variant="warning" className="m-3">
+                    <FaTimes className="me-2" />
+                    Cannot connect to trading bot server. Some features may be unavailable.
+                  </Alert>
+                )}
+                
+                {!connectionError && (
+                  <div className="bot-control-bar p-2 d-flex justify-content-between align-items-center">
+                    <div>
+                      <span className={`status-indicator ${botStatus.running ? "active" : "inactive"}`}></span>
+                      <span className="ms-2">Bot Status: {botStatus.status}</span>
+                    </div>
+                    <Button
+                      variant={botStatus.running ? "danger" : "success"}
+                      size="sm"
+                      onClick={toggleBot}
+                    >
+                      {botStatus.running ? (
+                        <>
+                          <FaStopCircle className="me-1" /> Stop Bot
+                        </>
+                      ) : (
+                        <>
+                          <FaPlayCircle className="me-1" /> Start Bot
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+                
+                <Suspense fallback={<LoadingSpinner />}>
+                  <Routes>
+                    <Route path="/" element={<Navigate to="/dashboard" />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/market" element={<Market />} />
+                    <Route path="/wallet" element={<Wallet />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="*" element={<Navigate to="/dashboard" />} />
+                  </Routes>
+                </Suspense>
               </div>
             </div>
-          </Col>
-          <Col md={10} className="main-content">
-            <ErrorBoundary>
-              <Suspense fallback={
-                <div className="d-flex justify-content-center align-items-center h-100">
-                  <Spinner animation="border" role="status" variant={darkMode ? 'light' : 'primary'}>
-                    <span className="visually-hidden">Loading component...</span>
-                  </Spinner>
-                </div>
-              }>
-                {renderActiveComponent()}
-              </Suspense>
-            </ErrorBoundary>
-          </Col>
-        </Row>
-      </Container>
-    </div>
-  )
-}
+            <Notifications notifications={notifications} />
+          </ErrorBoundary>
+        </div>
+      </div>
+    </BrowserRouter>
+  );
+};
 
-export default App
+export default App;

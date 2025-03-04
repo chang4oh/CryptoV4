@@ -3,6 +3,7 @@ import os
 import time
 import logging
 import argparse
+import traceback
 from datetime import datetime
 
 # Configure logging
@@ -46,7 +47,7 @@ def print_status(trader, signal=None):
     
     # Latest signal
     if signal:
-        print(f"\nLatest Signal: {signal['signal']}")
+        print(f"\nLatest Signal: {signal['action']}")
         print(f"Reason: {signal['reason']}")
         if 'price' in signal:
             print(f"Price: ${signal['price']:,.2f}")
@@ -55,7 +56,7 @@ def print_status(trader, signal=None):
     
     # Market data
     try:
-        market_data = trader.market_collector.get_market_data(trader.symbol)
+        market_data = trader.market_data.get_latest_market_data(trader.symbol)
         if market_data:
             print(f"\nMarket Data ({trader.symbol}):")
             print(f"Price: ${market_data['price']:,.2f}")
@@ -113,11 +114,11 @@ def run_trading_system(interval=300, test_mode=False):
                 logger.info(f"Signal generated: {signal}")
                 
                 # Execute signal if not in test mode
-                if signal['signal'] in ['BUY', 'SELL'] and not test_mode:
+                if signal['action'] in ['BUY', 'SELL'] and not test_mode:
                     result = trader.execute_signal(signal)
                     logger.info(f"Trade execution result: {result}")
-                elif signal['signal'] in ['BUY', 'SELL'] and test_mode:
-                    logger.info(f"Test mode: Would execute {signal['signal']} signal")
+                elif signal['action'] in ['BUY', 'SELL'] and test_mode:
+                    logger.info(f"Test mode: Would execute {signal['action']} signal")
                 
                 # Print status update
                 print_status(trader, signal)
@@ -129,21 +130,40 @@ def run_trading_system(interval=300, test_mode=False):
             logger.info(f"Waiting {interval} seconds until next cycle...")
             time.sleep(interval)
             
-    except KeyboardInterrupt:
-        logger.info("Trading system stopped by user")
+    except ModuleNotFoundError as e:
+        if "newsapi" in str(e):
+            logger.error(f"Critical dependency missing: {str(e)}")
+            logger.error("The NewsAPI client is required for sentiment analysis.")
+            logger.error("Please install it with: pip install newsapi-python")
+            print("\n" + "="*60)
+            print("ERROR: Missing dependency - newsapi-python")
+            print("="*60)
+            print("The trading system requires the NewsAPI client for sentiment analysis.")
+            print("Please install the missing package with the following command:")
+            print("\npip install newsapi-python\n")
+            print("Alternatively, you can run with technical analysis only using:")
+            print("python main.py --no-sentiment")
+            print("="*60)
+        else:
+            logger.error(f"Critical error in trading system: {str(e)}")
+            logger.error(traceback.format_exc())
     except Exception as e:
         logger.error(f"Critical error in trading system: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(traceback.format_exc())
 
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="CryptoV4 Trading System")
-    parser.add_argument("--interval", type=int, default=300, 
-                        help="Time between trading cycles in seconds (default: 300)")
-    parser.add_argument("--test", action="store_true", 
-                        help="Run in test mode (generate signals but don't execute trades)")
+    parser.add_argument("--interval", type=int, default=300, help="Trading interval in seconds")
+    parser.add_argument("--test", action="store_true", help="Run in test mode (no real trades)")
+    parser.add_argument("--no-sentiment", action="store_true", help="Run without sentiment analysis (skips NewsAPI)")
+    
     args = parser.parse_args()
     
-    # Run trading system
+    # Handle --no-sentiment option by setting an environment variable that our modules can check
+    if args.no_sentiment:
+        os.environ["SKIP_SENTIMENT_ANALYSIS"] = "1"
+        print("Running without sentiment analysis (--no-sentiment flag)")
+    
+    # Run the trading system
     run_trading_system(interval=args.interval, test_mode=args.test) 

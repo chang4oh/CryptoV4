@@ -1,181 +1,293 @@
-import { useState, useEffect } from 'react';
-import { Card, Badge, Spinner, Alert, Button } from 'react-bootstrap';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Card, Badge, Spinner, Form, InputGroup, Button, ListGroup, Alert, Tabs, Tab } from 'react-bootstrap';
 import { FaAngleRight } from 'react-icons/fa';
 import SearchBox from './SearchBox';
-import { searchNews } from '../services/searchService';
+import { api } from '../services/api';
 
-const NewsFeed = ({ sentimentData, isLoading }) => {
-  // State for search results
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchPerformed, setSearchPerformed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+const NewsFeed = () => {
+  // State variables
+  const [news, setNews] = useState([]);
   const [filteredNews, setFilteredNews] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const refreshTimerRef = useRef(null);
 
-  // Initialize with provided data
+  // Fetch news data from the API
+  const fetchNews = useCallback(async () => {
+    try {
+      setLoading(true);
+      const newsData = await api.getSentimentData();
+      
+      if (Array.isArray(newsData)) {
+        // Sort news by date (newest first)
+        const sortedNews = newsData.sort((a, b) => {
+          return new Date(b.published_at) - new Date(a.published_at);
+        });
+        
+        setNews(sortedNews);
+        setFilteredNews(sortedNews);
+        setLastUpdated(new Date());
+      } else {
+        setError('Invalid news data format');
+      }
+    } catch (err) {
+      console.error('Error fetching news:', err);
+      setError('Failed to load news. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Initialize with data and set up auto-refresh
   useEffect(() => {
-    if (sentimentData && !searchPerformed) {
-      setSearchResults(sentimentData);
+    fetchNews();
+    
+    // Set up auto-refresh timer
+    if (autoRefresh) {
+      refreshTimerRef.current = setInterval(() => {
+        fetchNews();
+      }, 5 * 60 * 1000); // Refresh every 5 minutes
     }
-  }, [sentimentData, searchPerformed]);
+    
+    return () => {
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+      }
+    };
+  }, [autoRefresh, fetchNews]);
 
-  // Update the search results only when actually needed
+  // Filter news by search term and tab
   useEffect(() => {
-    // If we're not searching or if search query is empty, use all news
-    if (!isSearching && (!searchQuery || searchQuery === '')) {
-      setFilteredNews(sentimentData || []);
-      return;
+    if (!news.length) return;
+    
+    let filtered = [...news];
+    
+    // Apply search filter if search term exists
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(item => 
+        item.title.toLowerCase().includes(term) || 
+        item.description?.toLowerCase().includes(term) ||
+        item.source?.toLowerCase().includes(term)
+      );
     }
-
-    // Only update filtered results when search is complete
-    if (!isSearching && searchQuery) {
-      const results = performSearch(sentimentData || [], searchQuery);
-      setFilteredNews(results);
+    
+    // Apply sentiment filter based on active tab
+    if (activeTab === 'positive') {
+      filtered = filtered.filter(item => item.sentiment_score > 0.2);
+    } else if (activeTab === 'negative') {
+      filtered = filtered.filter(item => item.sentiment_score < -0.2);
+    } else if (activeTab === 'neutral') {
+      filtered = filtered.filter(item => 
+        item.sentiment_score >= -0.2 && item.sentiment_score <= 0.2
+      );
     }
-  }, [sentimentData, searchQuery, isSearching]);
+    
+    setFilteredNews(filtered);
+  }, [news, searchTerm, activeTab]);
 
-  // Debounced search function
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    // The SearchBox component now handles the isSearching state internally
+  // Format date for display
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleString();
   };
 
-  // Keep the original news array intact and only filter a copy
-  const performSearch = (newsArray, query) => {
-    if (!query) return newsArray;
+  // Get appropriate sentiment badge
+  const getSentimentBadge = (score) => {
+    if (!score && score !== 0) return null;
     
-    const lowerQuery = query.toLowerCase();
-    return newsArray.filter(item => 
-      item.title.toLowerCase().includes(lowerQuery) ||
-      item.body.toLowerCase().includes(lowerQuery) ||
-      item.source.toLowerCase().includes(lowerQuery)
+    let variant, text;
+    
+    if (score > 0.5) {
+      variant = 'success';
+      text = 'Very Positive';
+    } else if (score > 0.2) {
+      variant = 'success';
+      text = 'Positive';
+    } else if (score > -0.2) {
+      variant = 'secondary';
+      text = 'Neutral';
+    } else if (score > -0.5) {
+      variant = 'danger';
+      text = 'Negative';
+    } else {
+      variant = 'danger';
+      text = 'Very Negative';
+    }
+    
+    return (
+      <Badge bg={variant} className="ms-2">
+        {text} ({score.toFixed(2)})
+      </Badge>
     );
   };
 
-  // Format timestamp
-  const formatTimestamp = (timestamp) => {
-    try {
-      return new Date(timestamp).toLocaleString();
-    } catch (e) {
-      return 'Unknown';
-    }
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
   };
 
-  // Get sentiment badge color based on score
-  const getSentimentColor = (score) => {
-    const numScore = Number(score);
-    if (numScore > 0.2) return 'success';
-    if (numScore > -0.2) return 'warning';
-    return 'danger';
+  // Clear search term
+  const handleClearSearch = () => {
+    setSearchTerm('');
   };
 
-  // Get sentiment text based on score
-  const getSentimentText = (score) => {
-    const numScore = Number(score);
-    if (numScore > 0.5) return 'Very Positive';
-    if (numScore > 0.2) return 'Positive';
-    if (numScore > -0.2) return 'Neutral';
-    if (numScore > -0.5) return 'Negative';
-    return 'Very Negative';
-  };
-
-  // Truncate text
-  const truncateText = (text, maxLength = 120) => {
-    if (!text || text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  };
-
-  // Render the news items with stable keys to prevent re-rendering
-  const renderNewsItems = () => {
-    if (loading) {
-      return (
-        <div className="text-center py-5">
-          <Spinner animation="border" />
+  // Render individual news item
+  const renderNewsItem = (item) => {
+    return (
+      <ListGroup.Item key={item.id || item.url} className="news-item">
+        <div className="d-flex justify-content-between align-items-start">
+          <h6 className="mb-1">
+            {item.title}
+            {getSentimentBadge(item.sentiment_score)}
+          </h6>
         </div>
-      );
-    }
-
-    if (error) {
-      return (
-        <Alert variant="danger" className="my-3">
-          {error}
-        </Alert>
-      );
-    }
-
-    if (filteredNews.length === 0) {
-      return (
-        <div className="search-no-results">
-          <p>No news matching your search criteria.</p>
-          <Button variant="link" onClick={() => handleSearch('')}>
-            Clear search
-          </Button>
-        </div>
-      );
-    }
-
-    // Use stable IDs for list items to prevent unnecessary re-rendering
-    return filteredNews.map((item) => (
-      <Card key={item.id} className="mb-3 news-item">
-        <Card.Body>
-          <div className="d-flex justify-content-between mb-2">
-            <div className="news-source">
-              <Badge bg="info">{item.source || 'Unknown'}</Badge>
-            </div>
-            <small className="text-muted">
-              {formatTimestamp(item.timestamp)}
-            </small>
-          </div>
-          <Card.Title>{highlightSearchTerm(item.title, searchQuery)}</Card.Title>
-          <Card.Text>{highlightSearchTerm(item.body, searchQuery)}</Card.Text>
-          <div className="d-flex justify-content-between align-items-center">
-            <Badge bg={getSentimentColor(item.sentiment_score)}>
-              {getSentimentText(item.sentiment_score)}
-            </Badge>
-            
-            {item.url && (
-              <a 
-                href={item.url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="d-flex align-items-center text-primary"
-              >
-                Read more <FaAngleRight className="ms-1" />
-              </a>
+        
+        <p className="mb-1 text-muted small">
+          {item.source} • {formatDate(item.published_at)}
+        </p>
+        
+        {item.description && (
+          <p className="mb-2 news-description">{item.description}</p>
+        )}
+        
+        <div className="d-flex justify-content-between align-items-center">
+          <div>
+            {item.keywords && item.keywords.length > 0 && (
+              <div className="keywords">
+                {item.keywords.slice(0, 3).map((tag, index) => (
+                  <Badge 
+                    key={index} 
+                    bg="light" 
+                    text="dark" 
+                    className="me-1"
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
             )}
           </div>
-        </Card.Body>
-      </Card>
-    ));
-  };
-
-  // Highlight search terms without causing re-renders
-  const highlightSearchTerm = (text, searchTerm) => {
-    if (!searchTerm || searchTerm === '') return text;
-    
-    // Create a memoized version to avoid re-renders
-    const regex = new RegExp(`(${searchTerm})`, 'gi');
-    return text.split(regex).map((part, index) => {
-      if (part.toLowerCase() === searchTerm.toLowerCase()) {
-        return <span className="search-highlight" key={index}>{part}</span>;
-      }
-      return part;
-    });
+          <a 
+            href={item.url} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="btn btn-sm btn-outline-primary"
+          >
+            Read More
+          </a>
+        </div>
+      </ListGroup.Item>
+    );
   };
 
   return (
-    <div className="news-feed">
-      <div className="mb-3">
-        <SearchBox 
-          onSearch={handleSearch}
-          placeholder="Search news by title, source, or content..."
-        />
-      </div>
+    <Card className="mb-4">
+      <Card.Header className="d-flex justify-content-between align-items-center">
+        <h5 className="mb-0">Crypto News & Sentiment</h5>
+        <div className="d-flex align-items-center">
+          <Form.Check
+            type="switch"
+            id="news-auto-refresh"
+            label="Auto-refresh"
+            checked={autoRefresh}
+            onChange={() => setAutoRefresh(!autoRefresh)}
+            className="me-2"
+          />
+          <Button 
+            variant="outline-secondary" 
+            size="sm"
+            onClick={fetchNews}
+            disabled={loading}
+          >
+            {loading ? <Spinner animation="border" size="sm" /> : 'Refresh'}
+          </Button>
+        </div>
+      </Card.Header>
       
-      {renderNewsItems()}
-    </div>
+      <Card.Body>
+        {/* Search bar */}
+        <InputGroup className="mb-3">
+          <Form.Control
+            placeholder="Search news..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+          />
+          {searchTerm && (
+            <Button 
+              variant="outline-secondary" 
+              onClick={handleClearSearch}
+            >
+              Clear
+            </Button>
+          )}
+        </InputGroup>
+        
+        {/* Sentiment filter tabs */}
+        <Tabs
+          activeKey={activeTab}
+          onSelect={setActiveTab}
+          className="mb-3"
+        >
+          <Tab eventKey="all" title="All News" />
+          <Tab 
+            eventKey="positive" 
+            title={
+              <span>
+                Positive <Badge bg="success" className="ms-1">{news.filter(n => n.sentiment_score > 0.2).length}</Badge>
+              </span>
+            }
+          />
+          <Tab 
+            eventKey="neutral" 
+            title={
+              <span>
+                Neutral <Badge bg="secondary" className="ms-1">{news.filter(n => n.sentiment_score >= -0.2 && n.sentiment_score <= 0.2).length}</Badge>
+              </span>
+            }
+          />
+          <Tab 
+            eventKey="negative" 
+            title={
+              <span>
+                Negative <Badge bg="danger" className="ms-1">{news.filter(n => n.sentiment_score < -0.2).length}</Badge>
+              </span>
+            }
+          />
+        </Tabs>
+        
+        {/* News items */}
+        {error ? (
+          <Alert variant="danger">{error}</Alert>
+        ) : loading && news.length === 0 ? (
+          <div className="text-center py-5">
+            <Spinner animation="border" />
+            <p className="mt-2">Loading news...</p>
+          </div>
+        ) : filteredNews.length === 0 ? (
+          <Alert variant="info">
+            {searchTerm ? 'No news found matching your search.' : 'No news available.'}
+          </Alert>
+        ) : (
+          <>
+            <ListGroup variant="flush">
+              {filteredNews.map(renderNewsItem)}
+            </ListGroup>
+            
+            {/* Last updated info */}
+            {lastUpdated && (
+              <div className="text-muted small text-end mt-2">
+                Last updated: {lastUpdated.toLocaleString()}
+              </div>
+            )}
+          </>
+        )}
+      </Card.Body>
+    </Card>
   );
 };
 

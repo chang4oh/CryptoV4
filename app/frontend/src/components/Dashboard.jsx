@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Alert, Badge, Spinner } from 'react-bootstrap';
 import { getPopularCryptocurrencies, getTradingBotStatus, BOT_STATUS } from '../services/cryptoService';
 import * as cryptoService from '../services/cryptoService';
+import RealTimeChart from './RealTimeChart';
+import LiveTrades from './LiveTrades';
+import OrderBook from './OrderBook';
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -15,6 +18,7 @@ const Dashboard = () => {
     dailyVolume: 94782000000,
     activeCoins: 12784,
   });
+  const [activeSymbol, setActiveSymbol] = useState('btcusdt');
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -134,6 +138,11 @@ const Dashboard = () => {
     }
   };
 
+  // Handle crypto selection for real-time data
+  const handleCryptoSelect = (symbol) => {
+    setActiveSymbol(symbol.toLowerCase());
+  };
+
   return (
     <div className="dashboard p-3">
       <h4 className="mb-4">CryptoV4 Dashboard</h4>
@@ -171,12 +180,27 @@ const Dashboard = () => {
         </Card.Body>
       </Card>
       
+      {/* Real-Time Chart */}
+      <h5 className="mb-3">Real-Time Market Data</h5>
+      <Row className="mb-4">
+        <Col md={8}>
+          <RealTimeChart defaultSymbol={activeSymbol} defaultInterval="1m" />
+        </Col>
+        <Col md={4}>
+          <OrderBook defaultSymbol={activeSymbol} defaultDepth={10} />
+        </Col>
+      </Row>
+      
       {/* Top Cryptocurrencies */}
       <h5 className="mb-3">Top Cryptocurrencies</h5>
       <Row className="mb-4">
         {popularCryptos.map((crypto) => (
           <Col md={3} sm={6} key={crypto.id} className="mb-3">
-            <Card>
+            <Card 
+              className={`crypto-card ${activeSymbol === crypto.symbol.toLowerCase() ? 'border-primary' : ''}`}
+              onClick={() => handleCryptoSelect(crypto.symbol)}
+              style={{ cursor: 'pointer' }}
+            >
               <Card.Body>
                 <div className="d-flex align-items-center mb-2">
                   {crypto.logo && (
@@ -204,6 +228,14 @@ const Dashboard = () => {
             </Card>
           </Col>
         ))}
+      </Row>
+      
+      {/* Live Trades */}
+      <h5 className="mb-3">Live Trades</h5>
+      <Row className="mb-4">
+        <Col md={12}>
+          <LiveTrades defaultSymbol={activeSymbol} />
+        </Col>
       </Row>
       
       {/* Trading Bot Status */}
@@ -377,4 +409,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

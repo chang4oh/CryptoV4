@@ -1,204 +1,290 @@
 import axios from 'axios';
+import config from '../config';
 
-// Base URL for the API from environment variables
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
-// Create an axios instance with default config
-const apiClient = axios.create({
-  baseURL: API_URL,
-  timeout: 10000,
+// Create a standard API instance
+const api = axios.create({
+  baseURL: config.API.BASE_URL,
+  timeout: config.API.TIMEOUT,
   headers: {
     'Content-Type': 'application/json'
   }
 });
 
-// Add request interceptor for handling errors
-apiClient.interceptors.request.use(
-  config => {
-    // You can add authentication tokens here if needed
-    return config;
-  },
-  error => {
-    console.error('API Request Error:', error);
-    return Promise.reject(error);
-  }
-);
-
-// Add response interceptor for handling errors
-apiClient.interceptors.response.use(
+// Add a response interceptor for error handling
+api.interceptors.response.use(
   response => response,
   error => {
-    console.error('API Response Error:', error.response ? error.response.data : error.message);
-    return Promise.reject(error);
+    if (error.response) {
+      // Server responded with an error status code
+      return Promise.reject(error);
+    } else if (error.request) {
+      // Request was made but no response received (network error)
+      console.log('Network error - no response received:', error.request);
+      return Promise.reject({
+        message: 'Network error - could not connect to server',
+        isNetworkError: true
+      });
+    } else {
+      // Error in setting up the request
+      console.log('Error setting up request:', error.message);
+      return Promise.reject({
+        message: 'Error setting up request',
+        isConfigError: true
+      });
+    }
   }
 );
 
-// API functions
-export const api = {
-  // Trading status
-  getTradingStatus: async () => {
+/**
+ * Trading Bot API Service
+ * 
+ * Provides methods for interacting with the trading bot backend
+ */
+const apiService = {
+  // System
+  getSystemStatus: async () => {
     try {
-      const response = await apiClient.get('/api/trading_status');
+      const response = await api.get('/system/status');
       return response.data;
     } catch (error) {
-      console.error('Error fetching trading status:', error);
       throw error;
     }
   },
-
-  // Performance data
-  getPerformance: async (days = 30) => {
+  
+  // Market data endpoints
+  getMarketOverview: async () => {
     try {
-      const response = await apiClient.get(`/api/performance?days=${days}`);
+      const response = await api.get('/market/overview');
       return response.data;
     } catch (error) {
-      console.error('Error fetching performance data:', error);
       throw error;
     }
   },
-
-  // Sentiment data
-  getSentimentData: async (limit = 10) => {
+  
+  getCandlestickData: async (symbol, interval = '1h', limit = 100) => {
     try {
-      const response = await apiClient.get(`/api/sentiment?limit=${limit}`);
+      const response = await api.get(`/market/candles/${symbol}`, {
+        params: { interval, limit }
+      });
       return response.data;
     } catch (error) {
-      console.error('Error fetching sentiment data:', error);
       throw error;
     }
   },
-
-  // Recent trades
-  getRecentTrades: async (limit = 10) => {
+  
+  getSymbolPrice: async (symbol) => {
     try {
-      const response = await apiClient.get(`/api/recent_trades?limit=${limit}`);
+      const response = await api.get(`/market/price/${symbol}`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching recent trades:', error);
       throw error;
     }
   },
-
-  // Account information
-  getAccountInfo: async () => {
+  
+  // Trading bot endpoints
+  getBotStatus: async () => {
     try {
-      const response = await apiClient.get('/api/account_info');
+      const response = await api.get('/bot/status');
       return response.data;
     } catch (error) {
-      console.error('Error fetching account information:', error);
       throw error;
     }
   },
-
-  // Place a real order
+  
+  startBot: async () => {
+    try {
+      const response = await api.post('/bot/start');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  stopBot: async () => {
+    try {
+      const response = await api.post('/bot/stop');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  getBotConfig: async () => {
+    try {
+      const response = await api.get('/bot/config');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  updateBotConfig: async (config) => {
+    try {
+      const response = await api.put('/bot/config', config);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  // Wallet and positions
+  getWalletBalance: async () => {
+    try {
+      const response = await api.get('/wallet/balance');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  getOpenPositions: async () => {
+    try {
+      const response = await api.get('/positions/open');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  // Orders and trading
   placeOrder: async (orderData) => {
     try {
-      const response = await apiClient.post('/api/place_order', orderData);
+      const response = await api.post('/trading/order', orderData);
       return response.data;
     } catch (error) {
-      console.error('Error placing order:', error);
       throw error;
     }
   },
   
-  // Place a test order (simulated)
-  placeTestOrder: async (orderData) => {
+  getOrderHistory: async (limit = 20) => {
     try {
-      const response = await apiClient.post('/api/place_test_order', orderData);
+      const response = await api.get(`/trading/history?limit=${limit}`);
       return response.data;
     } catch (error) {
-      console.error('Error placing test order:', error);
       throw error;
     }
   },
   
-  // Toggle auto-trading
-  setAutoTradingEnabled: async (enabled) => {
+  // Trading performance
+  getPerformanceMetrics: async (timeframe = '1w') => {
     try {
-      const response = await apiClient.post('/api/set_auto_trading', { enabled });
+      const response = await api.get(`/performance/metrics?timeframe=${timeframe}`);
       return response.data;
     } catch (error) {
-      console.error('Error setting auto-trading status:', error);
       throw error;
     }
   },
   
-  // Get auto-trading status
-  getAutoTradingStatus: async () => {
+  // Search functionality
+  search: async (query) => {
     try {
-      const response = await apiClient.get('/api/auto_trading_status');
+      const response = await api.get(`/search?q=${encodeURIComponent(query)}`);
       return response.data;
     } catch (error) {
-      console.error('Error getting auto-trading status:', error);
       throw error;
     }
   },
   
-  // Save trading settings
-  saveSettings: async (settings) => {
+  // Bot control endpoints
+  restartBot: async () => {
     try {
-      const response = await apiClient.post('/api/save_settings', settings);
+      const response = await api.post('/bot/restart');
       return response.data;
     } catch (error) {
-      console.error('Error saving settings:', error);
       throw error;
     }
   },
   
-  // Get trading settings
-  getSettings: async () => {
+  // Market data endpoints
+  getMarketData: async (symbol) => {
     try {
-      const response = await apiClient.get('/api/settings');
+      const response = await api.get(`/market/data/${symbol}`);
       return response.data;
     } catch (error) {
-      console.error('Error getting settings:', error);
       throw error;
     }
   },
   
-  // Restore default settings
-  restoreDefaultSettings: async () => {
-    try {
-      const response = await apiClient.post('/api/restore_default_settings');
-      return response.data;
-    } catch (error) {
-      console.error('Error restoring default settings:', error);
-      throw error;
-    }
-  },
-  
-  // Get trading system health status
-  getSystemHealth: async () => {
-    try {
-      const response = await apiClient.get('/api/system_health');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching system health:', error);
-      throw error;
-    }
-  },
-  
-  // Get detailed system logs
-  getSystemLogs: async (limit = 100) => {
-    try {
-      const response = await apiClient.get(`/api/system_logs?limit=${limit}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching system logs:', error);
-      throw error;
-    }
-  },
-  
-  // Get market summary (used for multiple markets view)
   getMarketSummary: async () => {
     try {
-      const response = await apiClient.get('/api/market_summary');
+      const response = await api.get('/market/summary');
       return response.data;
     } catch (error) {
-      console.error('Error fetching market summary:', error);
       throw error;
     }
+  },
+  
+  getWatchlist: async () => {
+    try {
+      const response = await api.get('/market/watchlist');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  getSymbolDetails: async (symbol) => {
+    try {
+      const response = await api.get(`/market/details/${symbol}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  // Wallet/balance endpoints
+  getBalances: async () => {
+    try {
+      const response = await api.get('/wallet/balances');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  getTransactions: async () => {
+    try {
+      const response = await api.get('/wallet/transactions');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  // Trading performance endpoints
+  getTradeHistory: async () => {
+    try {
+      const response = await api.get('/trading/history');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  // Utility methods
+  handleApiError: (error) => {
+    const defaultMessage = 'An unexpected error occurred';
+    
+    if (error.response) {
+      // The request was made and the server responded with an error
+      const status = error.response.status;
+      const data = error.response.data;
+      
+      if (status === 401) {
+        return { message: 'Authentication failed. Please log in again.', code: 'AUTH_ERROR' };
+      } else if (status === 404) {
+        return { message: 'Requested resource not found', code: 'NOT_FOUND' };
+      } else if (data && data.message) {
+        return { message: data.message, code: data.code || 'API_ERROR' };
+      }
+    } else if (error.isNetworkError) {
+      return { message: error.message || 'Network error. Please check your connection.', code: 'NETWORK_ERROR' };
+    }
+    
+    return { message: defaultMessage, code: 'UNKNOWN_ERROR' };
   }
 };
 
-export default api; 
+// Export both the API instance and the API service
+export { api, apiService };
+export default apiService; 

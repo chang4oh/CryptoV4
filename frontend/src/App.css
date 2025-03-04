@@ -1,0 +1,221 @@
+/* Main Styles */
+body {
+  background-color: #f8f9fa;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Loading spinner */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+/* Cards */
+.card {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: none;
+  margin-bottom: 20px;
+}
+
+.card-header {
+  background-color: #343a40;
+  color: white;
+  font-weight: 500;
+}
+
+/* News styles */
+.news-container {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.news-item {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.news-item h6 {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.news-content {
+  color: #555;
+  font-size: 0.9rem;
+}
+
+/* Performance stats */
+.performance-stat {
+  text-align: center;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.performance-stat h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: #343a40;
+}
+
+.performance-stat p {
+  font-size: 1rem;
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+/* Footer */
+.footer {
+  margin-top: auto;
+  background-color: #343a40;
+  color: white;
+  padding: 15px 0;
+}
+
+/* Chart customization */
+.recharts-wrapper {
+  margin: 0 auto;
+}
+
+/* Badge styles */
+.badge {
+  font-size: 0.85rem;
+  padding: 5px 10px;
+}
+
+/* Table styles */
+th {
+  background-color: #f2f2f2;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .card-body {
+    padding: 15px 10px;
+  }
+  
+  .performance-stat h3 {
+    font-size: 1.5rem;
+  }
+  
+  .performance-stat p {
+    font-size: 0.9rem;
+  }
+  
+  .navbar .form-select, .navbar .btn {
+    font-size: 0.85rem;
+  }
+}
+
+/* Price movement indicators */
+.text-success {
+  font-weight: bold;
+}
+
+.text-danger {
+  font-weight: bold;
+}
+
+/* Button styles */
+.btn-primary {
+  background-color: #3f51b5;
+  border-color: #3f51b5;
+}
+
+.btn-primary:hover {
+  background-color: #303f9f;
+  border-color: #303f9f;
+}
+
+.btn-success {
+  background-color: #4caf50;
+  border-color: #4caf50;
+}
+
+.btn-danger {
+  background-color: #f44336;
+  border-color: #f44336;
+}
+
+/* Custom scrollbar for news container */
+.news-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.news-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.news-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.news-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Card header with icon */
+.card-header-icon {
+  margin-right: 8px;
+}
+
+/* Tooltip customization */
+.recharts-tooltip-wrapper {
+  z-index: 1000;
+}
+
+.recharts-default-tooltip {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid #ccc !important;
+  padding: 10px !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 5px !important;
+}
+
+.recharts-tooltip-label {
+  font-weight: bold !important;
+}
+
+/* Navbar styles */
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Dark mode styles (optional for future implementation) */
+.dark-mode {
+  background-color: #222;
+  color: #f8f9fa;
+}
+
+.dark-mode .card {
+  background-color: #333;
+  color: #f8f9fa;
+}
+
+.dark-mode .card-header {
+  background-color: #444;
+}
+
+.dark-mode .performance-stat {
+  background-color: #444;
+}
+
+.dark-mode .performance-stat h3 {
+  color: #f8f9fa;
+}
+
+.dark-mode .performance-stat p {
+  color: #adb5bd;
+} 

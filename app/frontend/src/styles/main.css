@@ -1,0 +1,476 @@
+/* CryptoV4 Trading Bot - Main Stylesheet */
+
+:root {
+  /* Light Theme Variables */
+  --primary-light: #3498DB;
+  --secondary-light: #2C3E50;
+  --background-light: #ECF0F1;
+  --card-bg-light: #FFFFFF;
+  --text-light: #2C3E50;
+  --success-light: #2ECC71;
+  --danger-light: #E74C3C;
+  --warning-light: #F39C12;
+  --info-light: #1ABC9C;
+  
+  /* Dark Theme Variables */
+  --primary-dark: #3498DB;
+  --secondary-dark: #1ABC9C;
+  --background-dark: #212529;
+  --card-bg-dark: #343A40;
+  --text-dark: #ECF0F1;
+  --success-dark: #2ECC71;
+  --danger-dark: #E74C3C;
+  --warning-dark: #F39C12;
+  --info-dark: #1ABC9C;
+  
+  /* Default to light theme */
+  --primary: var(--primary-light);
+  --secondary: var(--secondary-light);
+  --background: var(--background-light);
+  --card-bg: var(--card-bg-light);
+  --text: var(--text-light);
+  --success: var(--success-light);
+  --danger: var(--danger-light);
+  --warning: var(--warning-light);
+  --info: var(--info-light);
+  
+  /* Common Variables */
+  --border-radius: 0.5rem;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --transition-speed: 0.3s;
+}
+
+/* Dark theme class for body */
+body.dark-theme {
+  --primary: var(--primary-dark);
+  --secondary: var(--secondary-dark);
+  --background: var(--background-dark);
+  --card-bg: var(--card-bg-dark);
+  --text: var(--text-dark);
+  --success: var(--success-dark);
+  --danger: var(--danger-dark);
+  --warning: var(--warning-dark);
+  --info: var(--info-dark);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  transition: background-color var(--transition-speed);
+  margin: 0;
+  padding: 0;
+}
+
+/* Bootstrap overrides */
+.btn-primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-success {
+  background-color: var(--success);
+  border-color: var(--success);
+}
+
+.btn-danger {
+  background-color: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn-warning {
+  background-color: var(--warning);
+  border-color: var(--warning);
+}
+
+.btn-info {
+  background-color: var(--info);
+  border-color: var(--info);
+}
+
+.card {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  transition: all var(--transition-speed);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Custom components */
+.crypto-card {
+  border-left: 4px solid var(--primary);
+  transition: all var(--transition-speed);
+}
+
+.crypto-card.profit {
+  border-left-color: var(--success);
+}
+
+.crypto-card.loss {
+  border-left-color: var(--danger);
+}
+
+.market-table th {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.market-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.market-table tbody tr:hover {
+  background-color: rgba(52, 152, 219, 0.1); /* Light blue highlight */
+}
+
+/* Price changes */
+.price-up {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.price-down {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* Animations */
+.fade-in {
+  animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Loading spinner */
+.loading-spinner {
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 0.25rem solid rgba(52, 152, 219, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--primary);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Headers */
+.page-header {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.dark-theme .page-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Custom toggle switch for theme */
+.theme-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 30px;
+}
+
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 30px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--primary);
+}
+
+input:checked + .slider:before {
+  transform: translateX(30px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .card {
+    margin-bottom: 1rem;
+  }
+  
+  .page-header {
+    padding: 1rem 0;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Main Stylesheet for CryptoV4 Trading Bot */
+
+:root {
+  --primary-color: #3498db;
+  --secondary-color: #2ecc71;
+  --warning-color: #f39c12;
+  --danger-color: #e74c3c;
+  --dark-bg: #212529;
+  --light-bg: #f8f9fa;
+  --border-color: #dee2e6;
+  --text-dark: #343a40;
+  --text-light: #f8f9fa;
+  --sidebar-width: 250px;
+  --header-height: 60px;
+}
+
+/* Theme Variables */
+.light {
+  --bg-primary: var(--light-bg);
+  --bg-secondary: #ffffff;
+  --text-color: var(--text-dark);
+  --border: var(--border-color);
+}
+
+.dark {
+  --bg-primary: var(--dark-bg);
+  --bg-secondary: #2d3339;
+  --text-color: var(--text-light);
+  --border: #495057;
+}
+
+/* General Styles */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-primary);
+  color: var(--text-color);
+}
+
+.app {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-color);
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+}
+
+/* Sidebar Styles */
+.sidebar {
+  width: var(--sidebar-width);
+  height: calc(100vh - var(--header-height));
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  z-index: 1000;
+  transition: all 0.3s;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar.closed {
+  transform: translateX(-100%);
+}
+
+.sidebar-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-link {
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  color: var(--text-color);
+  transition: all 0.2s;
+}
+
+.sidebar-link:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-link.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+}
+
+/* Content Area Styles */
+.content-area {
+  flex: 1;
+  padding: 1rem;
+  margin-left: 0;
+  transition: all 0.3s;
+}
+
+.content-area.sidebar-open {
+  margin-left: var(--sidebar-width);
+}
+
+@media (max-width: 768px) {
+  .content-area.sidebar-open {
+    margin-left: 0;
+  }
+}
+
+/* Bot Status Indicator */
+.status-indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.status-indicator.active {
+  background-color: var(--secondary-color);
+  box-shadow: 0 0 8px var(--secondary-color);
+}
+
+.status-indicator.inactive {
+  background-color: var(--danger-color);
+  box-shadow: 0 0 8px var(--danger-color);
+}
+
+/* Bot Control Bar */
+.bot-control-bar {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+/* Dashboard specific styles */
+.dashboard-container .card {
+  background-color: var(--bg-secondary);
+  border-color: var(--border);
+  height: 100%;
+}
+
+.dashboard-container .card-header {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-color: var(--border);
+}
+
+/* Spinner Animation */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Fix for React Bootstrap Tables in dark mode */
+.dark .table {
+  color: var(--text-light);
+}
+
+.dark .table thead th {
+  border-bottom-color: var(--border);
+}
+
+.dark .table td, .dark .table th {
+  border-top-color: var(--border);
+}
+
+/* Form Controls */
+.dark .form-control, .dark .form-select {
+  background-color: var(--bg-secondary);
+  color: var(--text-light);
+  border-color: var(--border);
+}
+
+.dark .form-control:focus, .dark .form-select:focus {
+  background-color: var(--bg-secondary);
+  color: var(--text-light);
+}
+
+/* Buttons */
+.dark .btn-outline-primary,
+.dark .btn-outline-secondary,
+.dark .btn-outline-success,
+.dark .btn-outline-danger,
+.dark .btn-outline-warning,
+.dark .btn-outline-info {
+  color: var(--text-light);
+}
+
+/* Cards */
+.card {
+  margin-bottom: 1rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Theme Toggle Button */
+.theme-toggle, .sidebar-toggle, .notification-button {
+  color: var(--text-color);
+}
+
+/* Navbar Brand */
+.navbar-brand {
+  display: flex;
+  align-items: center;
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    width: 100%;
+    height: calc(100vh - var(--header-height));
+    z-index: 1050;
+  }
+  
+  .content-area {
+    margin-left: 0 !important;
+  }
+} 

@@ -1,98 +1,120 @@
-# CryptoV4 Trading System
+# CryptoV4 Trading Bot
 
-A sentiment-based cryptocurrency trading system that uses news sentiment analysis and market data to generate trading signals.
+A sophisticated cryptocurrency trading bot with real-time market data analysis, sentiment tracking, and automated trading capabilities.
 
-## Features
+## Project Structure
 
-- **Sentiment Analysis**: Analyzes cryptocurrency news to determine market sentiment
-- **Market Data**: Collects and analyzes market data from Binance
-- **Trading Logic**: Combines sentiment and market data to generate trading signals
-- **Trade Execution**: Executes trades on Binance Testnet
-- **MongoDB Integration**: Stores all data and trading history in MongoDB
-- **Web Dashboard**: Visualize trading performance and monitor system status
+```
+CryptoV4/
+├── app/
+│   ├── frontend/      # React frontend for monitoring
+│   ├── backend/       # Flask API for bot control
+│   ├── trading/       # Trading algorithms
+│   ├── data/          # Data processing
+│   └── sentiment/     # Sentiment analysis
+├── scripts/           # Utility scripts
+├── .env               # Consolidated environment variables
+├── requirements.txt   # Python dependencies
+└── README.md          # This file
+```
 
-## Requirements
+## Key Features
 
-- Python 3.8+
-- MongoDB 4.4+
-- Binance Testnet API credentials
+- **Automated Trading**: Configure strategies and let the bot execute trades
+- **Real-time Data Analysis**: Monitor market data with visualization tools
+- **Sentiment Analysis**: Track market sentiment from news and social media
+- **Configuration UI**: Easy-to-use interface for bot configuration
+- **Performance Tracking**: Detailed statistics on bot performance
+- **Backtesting**: Test strategies against historical data
 
-## Installation
+## Environment Setup
 
-1. Clone the repository
-2. Install dependencies:
+1. Copy the sample environment file:
+   ```bash
+   cp .env.example .env
    ```
-   pip install -r requirements.txt
-   ```
-3. Set up environment variables in `.env` file:
-   ```
-   BINANCE_API_KEY=your_api_key
-   BINANCE_SECRET_KEY=your_secret_key
-   MONGODB_URI=mongodb://localhost:27017/
-   CRYPTOCOMPARE_API_KEY=your_api_key (optional)
-   ```
-4. Make sure MongoDB is running
 
-## Usage
+2. Configure your environment variables in the `.env` file:
+   - API keys for exchanges
+   - Strategy parameters
+   - Database configuration
+   - UI preferences
 
-### Quick Start
+## Authentication Note
 
-Run the trading system with default settings:
-```
-start_trading.bat
-```
+This project has been streamlined by removing the authentication system to focus on the core trading functionality. If you need user authentication, you'll need to implement it separately.
 
-Start the web dashboard:
-```
-start_dashboard.bat
+## Starting the Application
+
+### Backend Server
+
+```bash
+cd /path/to/CryptoV4
+python -m app.backend.main
 ```
 
-### Command Line Options
+### Frontend Development Server
 
-Run the trading system with custom settings:
+```bash
+cd /path/to/CryptoV4/app/frontend
+npm install
+npm run dev
 ```
-python main.py --interval 600 --test
-```
 
-Options:
-- `--interval`: Time between trading cycles in seconds (default: 300)
-- `--test`: Run in test mode (generate signals but don't execute trades)
+The application will be available at http://localhost:3000 by default.
 
-### Web Dashboard
+## Trading Bot Operation
 
-The web dashboard provides a real-time view of your trading system:
+The trading bot can be controlled via:
 
-- **Account Status**: View current balances and profit/loss
-- **Market Data**: Current price, 24h change, and sentiment score
-- **Trading Signals**: Current trading signal based on sentiment and price trends
-- **Recent Trades**: List of recent trades with details
-- **News & Sentiment**: Latest news items with sentiment analysis
-- **Performance Chart**: Visualization of trading history
+1. **Web UI**: Use the dashboard to start/stop and configure the bot
+2. **API**: Use direct API calls to control bot operation
+3. **Command Line**: Use utility scripts in the `scripts` directory
 
-Access the dashboard at: http://localhost:5000
+## Configuration Options
 
-### Configuration
+### Strategies
 
-Adjust trading parameters in `config.py`:
-- Trading pair
-- Position size
-- Stop loss percentage
-- Sentiment threshold
-- Price trend threshold
-- Trading interval
+- MACD Crossover
+- RSI Oversold/Overbought
+- Bollinger Band Breakout
+- Moving Average Cross
+- Custom strategy via plugin architecture
 
-## Components
+### Risk Management
 
-- **NewsCollector**: Collects and analyzes news sentiment
-- **MarketDataCollector**: Collects market data from Binance
-- **TradeExecutor**: Executes trades on Binance
-- **SentimentTrader**: Main trading logic
-- **Dashboard**: Web interface for monitoring the system
+- Position sizing based on account percentage
+- Stop-loss and take-profit settings
+- Maximum number of concurrent positions
+- Maximum drawdown protection
 
-## Logs
+## Monitoring
 
-Trading logs are stored in `trading_log.txt`
+The dashboard provides real-time monitoring of:
+
+- Active trading bot status
+- Open positions
+- Recent trades
+- Account balance
+- Performance metrics
+- Market conditions
+
+## API Documentation
+
+API endpoints are available at `/api/docs` when running the backend server.
+
+## Troubleshooting
+
+Common issues:
+
+1. **Connection errors**: Check your API keys and network connection
+2. **Strategy failures**: Review logs in the `/logs` directory
+3. **Performance issues**: Adjust the refresh intervals in settings
+
+## Contributing
+
+Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines.
 
 ## License
 
-MIT 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 

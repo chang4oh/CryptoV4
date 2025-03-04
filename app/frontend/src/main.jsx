@@ -1,41 +1,72 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import './index.css'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import { initializeMeiliSearch } from './services/searchService'
-import { initializeCryptoSearch } from './services/cryptoService'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { ThemeProvider } from './hooks/useTheme';
 
-// Initialize MeiliSearch with mock data for development
-Promise.all([
-  initializeMeiliSearch(),
-  initializeCryptoSearch()
-])
-.then(() => {
-  console.log('All services initialized successfully');
-})
-.catch(error => {
-  console.error('Failed to initialize services:', error);
-  console.warn('Some functionality may be limited');
-});
+// Import Bootstrap and custom CSS
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './styles/main.css';
 
-// Register service worker for PWA support
-if (import.meta.env.PROD) {
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-          console.log('Service Worker registered with scope:', registration.scope);
-        })
-        .catch(error => {
-          console.error('Service Worker registration failed:', error);
-        });
-    });
-  }
-}
+// Layout and pages
+import Layout from './components/layout/Layout';
+import Dashboard from './pages/Dashboard';
+import Market from './pages/Market';
+import Wallet from './pages/Wallet';
+import Settings from './pages/Settings';
+import NotFound from './pages/NotFound';
+
+// Error boundary component
+const ErrorBoundary = ({ error }) => {
+  console.error(error);
+  return (
+    <div className="container text-center mt-5">
+      <h1>Something went wrong</h1>
+      <p className="text-danger">{error.message || 'Unknown error occurred'}</p>
+      <button 
+        className="btn btn-primary mt-3" 
+        onClick={() => window.location.href = '/'}
+      >
+        Go to Home
+      </button>
+    </div>
+  );
+};
+
+// Create router
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Layout />,
+    errorElement: <ErrorBoundary />,
+    children: [
+      {
+        index: true,
+        element: <Dashboard />,
+      },
+      {
+        path: 'market',
+        element: <Market />,
+      },
+      {
+        path: 'wallet',
+        element: <Wallet />,
+      },
+      {
+        path: 'settings',
+        element: <Settings />,
+      },
+      {
+        path: '*',
+        element: <NotFound />,
+      },
+    ],
+  },
+]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+    <ThemeProvider>
+      <RouterProvider router={router} />
+    </ThemeProvider>
+  </React.StrictMode>
+);

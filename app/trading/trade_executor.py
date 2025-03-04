@@ -24,8 +24,12 @@ class TradeExecutor:
         """Initialize Binance client and MongoDB connection."""
         # Initialize Binance client
         api_key = os.getenv('BINANCE_API_KEY')
-        api_secret = os.getenv('BINANCE_SECRET_KEY')
+        api_secret = os.getenv('BINANCE_API_SECRET')
         self.test_mode = test_mode
+        
+        # Log API key status (hidden for security)
+        logger.info(f"API Key status: {'Present' if api_key else 'Missing'}")
+        logger.info(f"API Secret status: {'Present' if api_secret else 'Missing'}")
         
         if (not api_key or not api_secret) and not self.test_mode:
             logger.error("Binance API credentials not found in environment variables")
@@ -40,6 +44,13 @@ class TradeExecutor:
         # Initialize Binance client with testnet
         self.client = Client(api_key, api_secret, testnet=True)
         
+        # Verify Binance connection
+        try:
+            server_time = self.client.get_server_time()
+            logger.info(f"Successfully connected to Binance API (server time: {server_time})")
+        except Exception as e:
+            logger.error(f"Failed to connect to Binance API: {str(e)}")
+            
         # Connect to MongoDB
         mongo_uri = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
         self.mongo_client = MongoClient(mongo_uri)
@@ -52,33 +63,70 @@ class TradeExecutor:
         # Ensure index on trading_history collection
         self.db.trading_history.create_index([('timestamp', DESCENDING)])
         
+        # If in test mode, ensure we have dummy balances
+        if self.test_mode:
+            self._ensure_test_account_balances()
+        
         logger.info(f"Trade executor initialized (test_mode: {self.test_mode})")
     
-    def get_account_balance(self, asset: str = 'USDT') -> float:
+    def _ensure_test_account_balances(self):
+        """Ensure test account balances exist in the database"""
+        try:
+            # Check if account_balance collection exists
+            if 'account_balance' not in self.db.list_collection_names():
+                self.db.create_collection('account_balance')
+            
+            # Check if we have balance data
+            if self.db.account_balance.count_documents({}) == 0:
+                # Create test balances
+                test_balances = [
+                    {'asset': 'USDT', 'free': 10000.0, 'locked': 0.0, 'timestamp': datetime.now()},
+                    {'asset': 'BTC', 'free': 0.5, 'locked': 0.0, 'timestamp': datetime.now()}
+                ]
+                self.db.account_balance.insert_many(test_balances)
+                logger.info("Created test account balances")
+            else:
+                logger.info("Test account balances already exist")
+        except Exception as e:
+            logger.error(f"Error ensuring test account balances: {str(e)}")
+    
+    def get_account_balance(self, asset):
         """
         Get account balance for a specific asset.
         
         Args:
-            asset: Asset symbol (default: USDT)
+            asset: Asset symbol (e.g., 'BTC', 'USDT')
             
         Returns:
-            Float balance amount
+            Float balance or 0.0 if not found
         """
+        if self.test_mode:
+            # In test mode, return dummy values from our local DB
+            try:
+                balance_doc = self.db.account_balance.find_one({'asset': asset})
+                if balance_doc:
+                    return float(balance_doc['free'])
+                return 0.0
+            except Exception as e:
+                logger.warning(f"Error getting test account balance: {str(e)}")
+                return 0.0
+                
         try:
-            account_info = self.client.get_account()
-            balances = account_info['balances']
-            
-            for balance in balances:
+            # In live mode, get actual Binance balance
+            account = self.client.get_account()
+            for balance in account['balances']:
                 if balance['asset'] == asset:
                     return float(balance['free'])
-            
             return 0.0
-            
         except BinanceAPIException as e:
-            logger.error(f"Binance API error getting balance: {str(e)}")
+            logger.error(f"Binance API error getting balance: {e}")
+            # If API key issue in test mode, return dummy values
+            if self.test_mode and (str(e).find("API-key") >= 0 or str(e).find("API key") >= 0):
+                logger.warning("Using fallback test balances due to API key error")
+                return 10000.0 if asset == 'USDT' else (0.5 if asset == 'BTC' else 0.0)
             return 0.0
         except Exception as e:
-            logger.error(f"Error getting balance: {str(e)}")
+            logger.error(f"Error getting account balance: {str(e)}")
             return 0.0
     
     def place_market_order(self, symbol: str, side: str, 

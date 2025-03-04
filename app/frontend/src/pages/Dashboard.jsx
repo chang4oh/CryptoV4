@@ -1,320 +1,267 @@
-import { useState, useEffect } from 'react';
-import { Container, Row, Col, Navbar, Nav, Button, Spinner, Alert } from 'react-bootstrap';
-import { FaSyncAlt, FaBitcoin, FaCog, FaChartLine, FaExchangeAlt } from 'react-icons/fa';
-import '../App.css';
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Button, Badge, ListGroup, Alert } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import { BsArrowUp, BsArrowDown, BsPlay, BsPause, BsGear, BsCurrencyBitcoin, BsWallet2, BsGraphUp } from 'react-icons/bs';
+import apiService from '../services/api';
+import config from '../config';
 
-// Import all components
-import AccountStatus from '../components/AccountStatus';
-import MarketData from '../components/MarketData';
-import TradingSignals from '../components/TradingSignals';
-import RecentTrades from '../components/RecentTrades';
-import NewsFeed from '../components/NewsFeed';
-import PerformanceChart from '../components/PerformanceChart';
-import TradingControls from '../components/TradingControls';
-import Settings from '../components/Settings';
+// Components
+const BotStatusCard = ({ status }) => {
+  const isRunning = status === 'RUNNING';
+  return (
+    <Card className="mb-4 shadow-sm">
+      <Card.Header className="d-flex justify-content-between align-items-center">
+        <h5 className="mb-0">Trading Bot Status</h5>
+        <Badge bg={isRunning ? 'success' : 'secondary'}>
+          {status}
+        </Badge>
+      </Card.Header>
+      <Card.Body>
+        <div className="d-flex justify-content-between mb-3">
+          <div>
+            <h6>Current Strategy</h6>
+            <p className="text-primary mb-0">
+              {config.TRADING.DEFAULT_STRATEGY} ({config.TRADING.DEFAULT_RISK_LEVEL})
+            </p>
+          </div>
+          <div>
+            <h6>Active Since</h6>
+            <p className="mb-0">{isRunning ? '2 hours ago' : 'Not active'}</p>
+          </div>
+        </div>
+        <div className="d-grid gap-2">
+          <Button 
+            variant={isRunning ? 'outline-danger' : 'outline-success'} 
+            size="sm"
+          >
+            {isRunning ? <><BsPause /> Stop Bot</> : <><BsPlay /> Start Bot</>}
+          </Button>
+          <Button 
+            as={Link} 
+            to="/settings" 
+            variant="outline-primary" 
+            size="sm"
+          >
+            <BsGear /> Configure
+          </Button>
+        </div>
+      </Card.Body>
+    </Card>
+  );
+};
 
-// Import custom dashboard data hook
-import { useDashboardData } from '../hooks/useDashboardData';
+const PerformanceCard = ({ performance }) => {
+  const isPositive = performance.daily_change >= 0;
+  
+  return (
+    <Card className="mb-4 shadow-sm">
+      <Card.Header>
+        <h5 className="mb-0">Performance</h5>
+      </Card.Header>
+      <Card.Body>
+        <Row>
+          <Col xs={6} className="text-center border-end">
+            <h6 className="text-muted">Today</h6>
+            <h4 className={isPositive ? 'text-success' : 'text-danger'}>
+              {isPositive ? '+' : ''}{performance.daily_change.toFixed(2)}%
+              {isPositive ? <BsArrowUp className="ms-1" /> : <BsArrowDown className="ms-1" />}
+            </h4>
+          </Col>
+          <Col xs={6} className="text-center">
+            <h6 className="text-muted">This Month</h6>
+            <h4 className={performance.monthly_change >= 0 ? 'text-success' : 'text-danger'}>
+              {performance.monthly_change >= 0 ? '+' : ''}{performance.monthly_change.toFixed(2)}%
+              {performance.monthly_change >= 0 ? <BsArrowUp className="ms-1" /> : <BsArrowDown className="ms-1" />}
+            </h4>
+          </Col>
+        </Row>
+        <hr />
+        <div className="d-grid">
+          <Button 
+            as={Link} 
+            to="/performance" 
+            variant="outline-primary" 
+            size="sm"
+          >
+            <BsGraphUp /> View Details
+          </Button>
+        </div>
+      </Card.Body>
+    </Card>
+  );
+};
+
+const AssetSummaryCard = ({ assets }) => {
+  return (
+    <Card className="mb-4 shadow-sm">
+      <Card.Header>
+        <h5 className="mb-0">Top Assets</h5>
+      </Card.Header>
+      <ListGroup variant="flush">
+        {assets.map((asset, index) => (
+          <ListGroup.Item key={index} className="d-flex justify-content-between align-items-center">
+            <div className="d-flex align-items-center">
+              <BsCurrencyBitcoin className="me-2 text-warning" />
+              <span>{asset.symbol}</span>
+            </div>
+            <div className="text-end">
+              <div>{asset.amount.toFixed(6)} {asset.symbol}</div>
+              <small className="text-muted">${asset.value.toFixed(2)} USD</small>
+            </div>
+          </ListGroup.Item>
+        ))}
+      </ListGroup>
+      <Card.Footer className="text-center">
+        <Button 
+          as={Link} 
+          to="/wallet" 
+          variant="outline-primary" 
+          size="sm"
+        >
+          <BsWallet2 /> View All Assets
+        </Button>
+      </Card.Footer>
+    </Card>
+  );
+};
+
+const RecentTradesCard = ({ trades }) => {
+  return (
+    <Card className="shadow-sm">
+      <Card.Header>
+        <h5 className="mb-0">Recent Trades</h5>
+      </Card.Header>
+      <ListGroup variant="flush">
+        {trades.length > 0 ? (
+          trades.map((trade, index) => (
+            <ListGroup.Item key={index}>
+              <div className="d-flex justify-content-between">
+                <span>
+                  <Badge bg={trade.side === 'BUY' ? 'success' : 'danger'}>
+                    {trade.side}
+                  </Badge>
+                  <span className="ms-2">{trade.symbol}</span>
+                </span>
+                <small className="text-muted">{trade.time}</small>
+              </div>
+              <div className="d-flex justify-content-between mt-1">
+                <small>
+                  Price: ${trade.price.toFixed(2)}
+                </small>
+                <small>
+                  Amount: {trade.amount.toFixed(6)}
+                </small>
+              </div>
+            </ListGroup.Item>
+          ))
+        ) : (
+          <ListGroup.Item className="text-center py-3">
+            No recent trades
+          </ListGroup.Item>
+        )}
+      </ListGroup>
+      <Card.Footer className="text-center">
+        <Button 
+          as={Link} 
+          to="/trading-history" 
+          variant="outline-primary" 
+          size="sm"
+        >
+          <BsGraphUp /> View Trading History
+        </Button>
+      </Card.Footer>
+    </Card>
+  );
+};
 
 const Dashboard = () => {
-  // Active view state
-  const [activeView, setActiveView] = useState('dashboard');
-  
-  // Use the dashboard data hook for state management
-  const {
-    tradingStatus,
-    performance,
-    sentimentData,
-    recentTrades,
-    accountInfo,
-    settings,
-    isLoading,
-    error,
-    lastUpdated,
-    fetchAllData,
-    placeTestOrder,
-    saveSettings,
-    restoreDefaultSettings,
-    tradingSignal
-  } = useDashboardData();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [data, setData] = useState({
+    botStatus: 'STOPPED',
+    performance: {
+      daily_change: 0,
+      monthly_change: 0
+    },
+    assets: [],
+    trades: []
+  });
 
-  // Handle manual refresh
-  const handleRefresh = () => {
-    fetchAllData();
-  };
-  
-  // Handle save settings
-  const handleSaveSettings = async (newSettings) => {
-    try {
-      await saveSettings(newSettings);
-      return true;
-    } catch (error) {
-      console.error('Error saving settings:', error);
-      return false;
-    }
-  };
-  
-  // Handle restore settings
-  const handleRestoreSettings = async () => {
-    try {
-      await restoreDefaultSettings();
-      return true;
-    } catch (error) {
-      console.error('Error restoring settings:', error);
-      return false;
-    }
-  };
-  
-  // Function to show browser notifications
-  const showNotification = (title, message) => {
-    if (!settings?.dashboard?.show_notifications) return;
-    
-    if ('Notification' in window) {
-      if (Notification.permission === 'granted') {
-        new Notification(title, { body: message, icon: '/favicon.svg' });
-      } else if (Notification.permission !== 'denied') {
-        Notification.requestPermission().then(permission => {
-          if (permission === 'granted') {
-            new Notification(title, { body: message, icon: '/favicon.svg' });
-          }
-        });
-      }
-    }
-  };
-  
-  // Show notification for trading signal changes
+  // Mock data loading
   useEffect(() => {
-    if (tradingSignal && tradingStatus && settings?.dashboard?.show_notifications) {
-      if (tradingSignal === 'BUY') {
-        showNotification('BUY Signal Generated', 'Positive sentiment detected. Consider buying.');
-      } else if (tradingSignal === 'SELL') {
-        showNotification('SELL Signal Generated', 'Negative sentiment detected. Consider selling.');
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        
+        // In a real scenario, we would call the API
+        // const response = await apiService.getDashboardData();
+        
+        // For now, use mock data
+        setTimeout(() => {
+          const mockData = {
+            botStatus: 'STOPPED',
+            performance: {
+              daily_change: 2.35,
+              monthly_change: -1.42
+            },
+            assets: [
+              { symbol: 'BTC', amount: 0.023456, value: 1234.56 },
+              { symbol: 'ETH', amount: 0.512345, value: 987.65 },
+              { symbol: 'DOT', amount: 15.234567, value: 456.78 },
+              { symbol: 'ADA', amount: 120.123456, value: 234.56 }
+            ],
+            trades: [
+              { side: 'BUY', symbol: 'BTC/USDT', price: 52345.67, amount: 0.002345, time: '10:23 AM' },
+              { side: 'SELL', symbol: 'ETH/USDT', price: 2876.54, amount: 0.123456, time: 'Yesterday' },
+              { side: 'BUY', symbol: 'DOT/USDT', price: 23.45, amount: 5.123456, time: 'Yesterday' }
+            ]
+          };
+          
+          setData(mockData);
+          setLoading(false);
+        }, 1000);
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError('Failed to load dashboard data. Please try again later.');
+        setLoading(false);
       }
-    }
-  }, [tradingSignal, tradingStatus, settings]);
+    };
 
-  // Render the active view
-  const renderActiveView = () => {
-    switch (activeView) {
-      case 'trading':
-        return (
-          <div className="p-3">
-            <h3 className="mb-4">Trading Controls</h3>
-            <Row>
-              <Col md={6}>
-                <div className="card shadow-sm">
-                  <div className="card-header bg-dark text-white">
-                    Market Data
-                  </div>
-                  <div className="card-body">
-                    <MarketData tradingStatus={tradingStatus} isLoading={isLoading} />
-                  </div>
-                </div>
-              </Col>
-              <Col md={6}>
-                <div className="card shadow-sm">
-                  <div className="card-header bg-dark text-white">
-                    Trading Controls
-                  </div>
-                  <div className="card-body">
-                    <TradingControls
-                      accountInfo={accountInfo}
-                      tradingStatus={tradingStatus}
-                      onPlaceOrder={placeTestOrder}
-                      isLoading={isLoading}
-                    />
-                  </div>
-                </div>
-              </Col>
-            </Row>
-          </div>
-        );
-        
-      case 'settings':
-        return (
-          <div className="p-3">
-            <div className="card shadow-sm">
-              <div className="card-header bg-dark text-white">
-                Dashboard Settings
-              </div>
-              <div className="card-body">
-                <Settings
-                  onSaveSettings={handleSaveSettings}
-                  onRestoreDefaults={handleRestoreSettings}
-                  isLoading={isLoading}
-                  initialSettings={settings}
-                />
-              </div>
-            </div>
-          </div>
-        );
-        
-      case 'dashboard':
-      default:
-        return (
-          <>
-            {/* Account Status and Market Data */}
-            <Row className="mb-4">
-              <Col md={6}>
-                <div className="card shadow-sm">
-                  <div className="card-header bg-dark text-white">
-                    Account Status
-                  </div>
-                  <div className="card-body">
-                    <AccountStatus accountInfo={accountInfo} isLoading={isLoading} />
-                  </div>
-                </div>
-              </Col>
-              <Col md={6}>
-                <div className="card shadow-sm">
-                  <div className="card-header bg-dark text-white">
-                    Market Data
-                  </div>
-                  <div className="card-body">
-                    <MarketData tradingStatus={tradingStatus} isLoading={isLoading} />
-                  </div>
-                </div>
-              </Col>
-            </Row>
+    fetchDashboardData();
+  }, []);
 
-            {/* Trading Signals and Recent Trades */}
-            <Row className="mb-4">
-              <Col md={6}>
-                <div className="card shadow-sm">
-                  <div className="card-header bg-dark text-white">
-                    Trading Signals
-                  </div>
-                  <div className="card-body">
-                    <TradingSignals 
-                      tradingStatus={tradingStatus} 
-                      tradingSignal={tradingSignal}
-                      isLoading={isLoading} 
-                    />
-                  </div>
-                </div>
-              </Col>
-              <Col md={6}>
-                <div className="card shadow-sm">
-                  <div className="card-header bg-dark text-white">
-                    Recent Trades
-                  </div>
-                  <div className="card-body">
-                    <RecentTrades recentTrades={recentTrades} isLoading={isLoading} />
-                  </div>
-                </div>
-              </Col>
-            </Row>
-
-            {/* News Feed and Performance Chart */}
-            <Row>
-              <Col md={6}>
-                <div className="card shadow-sm">
-                  <div className="card-header bg-dark text-white">
-                    News & Sentiment
-                  </div>
-                  <div className="card-body">
-                    <NewsFeed sentimentData={sentimentData} isLoading={isLoading} />
-                  </div>
-                </div>
-              </Col>
-              <Col md={6}>
-                <div className="card shadow-sm">
-                  <div className="card-header bg-dark text-white">
-                    Performance Chart
-                  </div>
-                  <div className="card-body">
-                    <PerformanceChart performance={performance} isLoading={isLoading} />
-                  </div>
-                </div>
-              </Col>
-            </Row>
-          </>
-        );
-    }
-  };
+  if (error) {
+    return (
+      <Container>
+        <Alert variant="danger">{error}</Alert>
+      </Container>
+    );
+  }
 
   return (
-    <div className="dashboard">
-      <Navbar bg="dark" variant="dark" className="mb-0">
-        <Container>
-          <Navbar.Brand>
-            <FaBitcoin className="me-2" />
-            CryptoV4 Trading Dashboard
-          </Navbar.Brand>
-          <Nav className="me-auto">
-            <Nav.Link 
-              onClick={() => setActiveView('dashboard')} 
-              active={activeView === 'dashboard'}
-              className="d-flex align-items-center"
-            >
-              <FaChartLine className="me-1" /> Dashboard
-            </Nav.Link>
-            <Nav.Link 
-              onClick={() => setActiveView('trading')} 
-              active={activeView === 'trading'}
-              className="d-flex align-items-center"
-            >
-              <FaExchangeAlt className="me-1" /> Trading
-            </Nav.Link>
-            <Nav.Link 
-              onClick={() => setActiveView('settings')} 
-              active={activeView === 'settings'}
-              className="d-flex align-items-center"
-            >
-              <FaCog className="me-1" /> Settings
-            </Nav.Link>
-          </Nav>
-          <Navbar.Text className="text-light d-none d-md-block">
-            Last updated: {lastUpdated}
-          </Navbar.Text>
-        </Container>
-      </Navbar>
+    <Container>
+      <h1 className="mb-4">Dashboard</h1>
       
-      <div className="dashboard-status-bar bg-light border-bottom py-2">
-        <Container className="d-flex justify-content-between align-items-center">
-          <div>
-            <small className="text-muted">Status:</small> 
-            <span className="ms-1 badge bg-success">Connected</span>
-          </div>
-          <div className="d-flex align-items-center">
-            <small className="text-muted me-2">Current Signal:</small>
-            <span className={`badge ${tradingSignal === 'BUY' ? 'bg-success' : tradingSignal === 'SELL' ? 'bg-danger' : 'bg-warning'}`}>
-              {tradingSignal || 'NEUTRAL'}
-            </span>
-          </div>
-          <div className="d-md-none">
-            <small className="text-muted">Updated:</small> 
-            <span className="ms-1">{lastUpdated}</span>
-          </div>
-          <Button 
-            variant="outline-primary"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isLoading}
-          >
-            {isLoading ? 
-              <Spinner animation="border" size="sm" /> : 
-              <FaSyncAlt />
-            }
-          </Button>
-        </Container>
-      </div>
-
-      <Container className="py-4">
-        {isLoading && !tradingStatus ? (
-          <div className="text-center my-5">
-            <Spinner animation="border" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </Spinner>
-            <p className="mt-2">Loading dashboard data...</p>
-          </div>
-        ) : error ? (
-          <Alert variant="danger" className="mb-4">
-            Error loading data: {error}
-          </Alert>
-        ) : renderActiveView()}
-      </Container>
-    </div>
+      {loading ? (
+        <div className="text-center py-5">
+          <div className="loading-spinner mb-3"></div>
+          <p>Loading dashboard data...</p>
+        </div>
+      ) : (
+        <Row>
+          <Col lg={4} md={6}>
+            <BotStatusCard status={data.botStatus} />
+            <PerformanceCard performance={data.performance} />
+          </Col>
+          <Col lg={4} md={6}>
+            <AssetSummaryCard assets={data.assets} />
+          </Col>
+          <Col lg={4} md={12}>
+            <RecentTradesCard trades={data.trades} />
+          </Col>
+        </Row>
+      )}
+    </Container>
   );
 };
 
